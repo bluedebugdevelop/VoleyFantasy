@@ -10,15 +10,15 @@ import {
   where,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { Jugador, Liga, MiembroLiga } from '../types';
+import { EquipoLiga, Jugador, Liga, MiembroLiga, Modalidad, Partido, Puja, Venta } from '../types';
 import { generarJugadoresSeed } from '../data/seed';
 import jugadoresReales from '../data/jugadoresReales.json';
+import calendarioLocal from '../data/calendario.json';
 
 /**
- * Capa de datos: usa Firestore cuando está configurado (colección `jugadores`
- * que rellena y actualiza a diario el scraper de /scraper con los datos de
- * https://rfevb-web.dataproject.com). Sin Firestore, usa la última foto de
- * datos reales empaquetada en la app y, como último recurso, datos generados.
+ * Capa de datos: Firestore cuando está configurado (colecciones `jugadores` y
+ * `calendario` que rellena a diario el scraper) con datos empaquetados como
+ * respaldo (modo demo / sin conexión).
  */
 export async function cargarJugadores(): Promise<Jugador[]> {
   if (db) {
@@ -33,16 +33,29 @@ export async function cargarJugadores(): Promise<Jugador[]> {
   return reales.length > 0 ? reales : generarJugadoresSeed();
 }
 
-export interface EquipoRemoto {
-  plantillaIds: string[];
-  alineacion: Record<string, string | null>;
-  presupuesto: number;
+/** Próxima jornada (o última disputada) por categoría. */
+export async function cargarCalendario(): Promise<Record<string, Partido[]>> {
+  if (db) {
+    try {
+      const snap = await getDocs(collection(db, 'calendario'));
+      if (!snap.empty) {
+        const r: Record<string, Partido[]> = {};
+        snap.forEach((d) => {
+          r[d.id] = (d.data().proximaJornada ?? []) as Partido[];
+        });
+        return r;
+      }
+    } catch {
+      // sin permisos o sin datos: caemos al calendario local
+    }
+  }
+  return calendarioLocal as unknown as Record<string, Partido[]>;
 }
 
+// ----- Estado del usuario (equipos por liga) -----
+
 export interface EstadoUsuarioRemoto {
-  /** Un equipo por modalidad (clave = Modalidad). */
-  equipos: Record<string, EquipoRemoto>;
-  modalidadActiva: string;
+  equiposLiga: Record<string, EquipoLiga>;
   nombre: string;
 }
 
@@ -59,38 +72,15 @@ export async function cargarEstadoUsuario(uid: string): Promise<EstadoUsuarioRem
 
 // ----- Ligas -----
 
-import { Modalidad, nombreModalidad } from '../types';
-
-export const idLigaGeneral = (modalidad: Modalidad) => `liga-general-${modalidad}`;
-
-/** Liga pública general de una modalidad; crea o incorpora al usuario. */
-export async function asegurarLigaGeneral(miembro: MiembroLiga, modalidad: Modalidad): Promise<Liga> {
-  const base: Liga = {
-    id: idLigaGeneral(modalidad),
-    nombre: `Liga General · ${nombreModalidad(modalidad)}`,
-    tipo: 'publica',
-    modalidad,
-    creador: 'sistema',
-    miembros: [miembro],
-  };
-  if (!db) return base;
-  const ref = doc(db, 'ligas', base.id);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) {
-    await setDoc(ref, base);
-    return base;
-  }
-  const liga = snap.data() as Liga;
-  if (!liga.miembros.some((m) => m.uid === miembro.uid)) {
-    await updateDoc(ref, { miembros: arrayUnion(miembro) });
-    liga.miembros.push(miembro);
-  }
-  return liga;
-}
-
 export async function crearLigaRemota(liga: Liga): Promise<void> {
   if (!db) return;
   await setDoc(doc(db, 'ligas', liga.id), liga);
+}
+
+export async function cargarLiga(ligaId: string): Promise<Liga | null> {
+  if (!db) return null;
+  const snap = await getDoc(doc(db, 'ligas', ligaId));
+  return snap.exists() ? (snap.data() as Liga) : null;
 }
 
 export async function buscarLigaPorCodigo(codigo: string): Promise<Liga | null> {
@@ -111,18 +101,39 @@ export async function cargarLigasDeUsuario(uid: string): Promise<Liga[]> {
   return snap.docs.map((d) => d.data() as Liga).filter((l) => l.miembros.some((m) => m.uid === uid));
 }
 
-/** Actualiza los puntos del usuario en cada liga según la modalidad de esa liga. */
+/** Registra o mejora una puja en el mercado de la liga. */
+export async function guardarPujas(ligaId: string, pujas: Record<string, Puja[]>, cicloPujas: number): Promise<void> {
+  if (!db) return;
+  await updateDoc(doc(db, 'ligas', ligaId), { pujas, cicloPujas });
+}
+
+/** Publica la resolución de un ciclo: limpia pujas y añade las ventas. */
+export async function publicarResolucion(
+  ligaId: string,
+  cicloPujas: number,
+  ventas: Venta[],
+): Promise<void> {
+  if (!db) return;
+  await updateDoc(doc(db, 'ligas', ligaId), { pujas: {}, cicloPujas, ventas });
+}
+
+export async function guardarVentas(ligaId: string, ventas: Venta[]): Promise<void> {
+  if (!db) return;
+  await updateDoc(doc(db, 'ligas', ligaId), { ventas });
+}
+
+/** Actualiza los puntos del usuario en sus ligas (los de cada equipo de liga). */
 export async function actualizarPuntosEnLigas(
   uid: string,
   ligas: Liga[],
-  puntosDe: (modalidad: Modalidad) => number,
+  puntosDe: (ligaId: string) => number,
 ): Promise<void> {
   if (!db) return;
   await Promise.all(
     ligas.map(async (l) => {
-      const puntos = puntosDe(l.modalidad);
+      const puntos = puntosDe(l.id);
       const miembros = l.miembros.map((m) => (m.uid === uid ? { ...m, puntos } : m));
-      await updateDoc(doc(db!, 'ligas', l.id), { miembros });
+      await updateDoc(doc(db!, 'ligas', l.id), { miembros }).catch(() => {});
     }),
   );
 }

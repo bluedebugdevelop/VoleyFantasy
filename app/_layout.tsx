@@ -58,9 +58,11 @@ export default function RootLayout() {
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)/registro" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="home" options={{ headerShown: false }} />
+        <Stack.Screen name="liga/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="bienvenida/[id]" options={{ headerShown: false, animation: 'fade' }} />
+        <Stack.Screen name="unirse/[codigo]" options={{ headerShown: false }} />
         <Stack.Screen name="jugador/[id]" options={{ title: 'Jugador' }} />
-        <Stack.Screen name="liga/[id]" options={{ title: 'Liga' }} />
       </Stack>
     </>
   );

@@ -6,6 +6,11 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow write: if false;
     }
+    // Calendario oficial: solo lo escribe el scraper
+    match /calendario/{categoria} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
     // Cada usuario solo puede escribir su propio estado
     match /usuarios/{uid} {
       allow read: if request.auth != null;

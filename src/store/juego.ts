@@ -2,59 +2,47 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
-  categoriasDeModalidad,
+  EquipoLiga,
   HUECOS_ALINEACION,
   Jugador,
   Liga,
   MiembroLiga,
   Modalidad,
-  MODALIDAD_POR_DEFECTO,
-  MODALIDADES,
   nombreModalidad,
-  Operacion,
-  PRESUPUESTO_INICIAL,
-  TAMANO_PLANTILLA,
+  Partido,
+  Puja,
   Usuario,
 } from '../types';
 import { actualizarValorDiario } from '../logic/market';
 import {
+  alinearInicial,
+  cabeEnPlantilla,
+  cicloActual,
+  plantillaInicial,
+  resolverPujas,
+  validarPuja,
+} from '../logic/mercadoLiga';
+import {
   actualizarPuntosEnLigas,
-  asegurarLigaGeneral,
   buscarLigaPorCodigo,
+  cargarCalendario,
   cargarEstadoUsuario,
   cargarJugadores,
+  cargarLiga,
   cargarLigasDeUsuario,
   crearLigaRemota,
   guardarEstadoUsuario,
-  idLigaGeneral,
+  guardarPujas,
+  guardarVentas,
+  publicarResolucion,
   unirseLigaRemota,
 } from '../services/datos';
 import { firebaseConfigurado } from '../services/firebase';
 
-type Alineacion = Record<string, string | null>;
-
-/** Equipo del usuario en una modalidad concreta. */
-interface Equipo {
-  plantillaIds: string[];
-  alineacion: Alineacion;
-  presupuesto: number;
-  operaciones: Operacion[];
-}
-
-function alineacionVacia(): Alineacion {
-  const a: Alineacion = {};
+function alineacionVacia(): Record<string, string | null> {
+  const a: Record<string, string | null> = {};
   HUECOS_ALINEACION.forEach((h) => (a[h.etiqueta] = null));
   return a;
-}
-
-function equipoVacio(): Equipo {
-  return { plantillaIds: [], alineacion: alineacionVacia(), presupuesto: PRESUPUESTO_INICIAL, operaciones: [] };
-}
-
-function equiposIniciales(): Record<Modalidad, Equipo> {
-  const r = {} as Record<Modalidad, Equipo>;
-  MODALIDADES.forEach((m) => (r[m.id] = equipoVacio()));
-  return r;
 }
 
 function codigoLiga(): string {
@@ -64,50 +52,39 @@ function codigoLiga(): string {
   return c;
 }
 
-const BOTS_DEMO: MiembroLiga[] = [
-  { uid: 'bot1', nombre: 'Ana (bot)', puntos: 412 },
-  { uid: 'bot2', nombre: 'Leo (bot)', puntos: 386 },
-  { uid: 'bot3', nombre: 'Marta (bot)', puntos: 348 },
-  { uid: 'bot4', nombre: 'Iker (bot)', puntos: 301 },
-];
-
-function ligaGeneralDemo(modalidad: Modalidad, miembro: MiembroLiga): Liga {
-  return {
-    id: idLigaGeneral(modalidad),
-    nombre: `Liga General · ${nombreModalidad(modalidad)}`,
-    tipo: 'publica',
-    modalidad,
-    creador: 'sistema',
-    miembros: [...BOTS_DEMO, miembro],
-  };
-}
-
 interface EstadoJuego {
   usuario: Usuario | null;
   cargando: boolean;
   jugadores: Jugador[];
-  equipos: Record<Modalidad, Equipo>;
-  modalidadActiva: Modalidad;
+  calendario: Record<string, Partido[]>;
   ligas: Liga[];
+  equiposLiga: Record<string, EquipoLiga>;
   ultimoDiaMercado: string;
 
   inicializar: () => Promise<void>;
   establecerUsuario: (u: Usuario | null) => Promise<void>;
   cerrarSesion: () => void;
-  setModalidadActiva: (m: Modalidad) => Promise<void>;
-  comprar: (id: string) => string | null;
-  vender: (id: string) => void;
-  alinear: (etiqueta: string, jugadorId: string | null) => void;
-  crearLigaPrivada: (nombre: string, modalidad: Modalidad) => Promise<Liga>;
-  unirsePorCodigo: (codigo: string) => Promise<Liga | null>;
-  actualizarMercadoDiario: () => void;
 
+  crearLiga: (nombre: string, modalidad: Modalidad) => Promise<Liga>;
+  unirsePorCodigo: (codigo: string) => Promise<Liga | null>;
+  /** Garantiza que existe equipo en la liga. Devuelve true si es nuevo (→ bienvenida). */
+  asegurarEquipo: (ligaId: string) => boolean;
+  marcarBienvenidaVista: (ligaId: string) => void;
+  refrescarLiga: (ligaId: string) => Promise<void>;
+
+  vender: (ligaId: string, jugadorId: string) => void;
+  alinear: (ligaId: string, etiqueta: string, jugadorId: string | null) => void;
+  pujar: (ligaId: string, jugadorId: string, cantidad: number) => string | null;
+  /** Resuelve ciclos de mercado expirados y reclama las subastas ganadas. */
+  sincronizarMercado: (ligaId: string) => Promise<void>;
+
+  liga: (ligaId: string) => Liga | undefined;
   jugador: (id: string) => Jugador | undefined;
-  jugadoresDeModalidad: (m?: Modalidad) => Jugador[];
-  equipoActivo: () => Equipo;
-  valorEquipo: (m?: Modalidad) => number;
-  puntosJornada: (m?: Modalidad) => number;
-  puntosTotales: (m?: Modalidad) => number;
+  equipoDe: (ligaId: string) => EquipoLiga | undefined;
+  puntosJornada: (ligaId: string) => number;
+  puntosTotales: (ligaId: string) => number;
+  valorEquipo: (ligaId: string) => number;
+  actualizarMercadoDiario: () => void;
 }
 
 export const useJuego = create<EstadoJuego>()(
@@ -116,15 +93,17 @@ export const useJuego = create<EstadoJuego>()(
       usuario: null,
       cargando: true,
       jugadores: [],
-      equipos: equiposIniciales(),
-      modalidadActiva: MODALIDAD_POR_DEFECTO,
+      calendario: {},
       ligas: [],
+      equiposLiga: {},
       ultimoDiaMercado: '',
 
       inicializar: async () => {
         if (firebaseConfigurado || get().jugadores.length === 0) {
-          const jugadores = await cargarJugadores();
-          set({ jugadores });
+          const [jugadores, calendario] = await Promise.all([cargarJugadores(), cargarCalendario()]);
+          set({ jugadores, calendario });
+        } else if (Object.keys(get().calendario).length === 0) {
+          set({ calendario: await cargarCalendario() });
         }
         get().actualizarMercadoDiario();
         set({ cargando: false });
@@ -132,150 +111,46 @@ export const useJuego = create<EstadoJuego>()(
 
       establecerUsuario: async (u) => {
         set({ usuario: u });
-        if (!u) return;
-        if (u.demo) {
-          await get().setModalidadActiva(get().modalidadActiva);
-          return;
-        }
-        // Con Firebase: restaurar equipos y ligas remotas
+        if (!u || u.demo) return;
         const remoto = await cargarEstadoUsuario(u.uid);
-        if (remoto?.equipos) {
-          const equipos = equiposIniciales();
-          (Object.keys(remoto.equipos) as Modalidad[]).forEach((m) => {
-            if (!equipos[m]) return;
-            equipos[m] = {
-              ...equipoVacio(),
-              ...remoto.equipos[m],
-              alineacion: { ...alineacionVacia(), ...remoto.equipos[m].alineacion },
-            };
-          });
-          set({ equipos, modalidadActiva: (remoto.modalidadActiva as Modalidad) || get().modalidadActiva });
-        }
-        const activa = get().modalidadActiva;
-        const miembro: MiembroLiga = { uid: u.uid, nombre: u.nombre, puntos: get().puntosTotales(activa) };
-        const general = await asegurarLigaGeneral(miembro, activa);
-        const propias = await cargarLigasDeUsuario(u.uid);
-        const mapa = new Map(propias.map((l) => [l.id, l]));
-        mapa.set(general.id, general);
-        set({ ligas: [...mapa.values()] });
+        if (remoto?.equiposLiga) set({ equiposLiga: remoto.equiposLiga });
+        const ligas = await cargarLigasDeUsuario(u.uid);
+        if (ligas.length > 0) set({ ligas });
       },
 
       cerrarSesion: () => {
-        set({
-          usuario: null,
-          equipos: equiposIniciales(),
-          modalidadActiva: MODALIDAD_POR_DEFECTO,
-          ligas: [],
-        });
+        set({ usuario: null, ligas: [], equiposLiga: {} });
       },
 
-      setModalidadActiva: async (m) => {
-        set({ modalidadActiva: m });
-        const u = get().usuario;
-        if (!u) return;
-        const miembro: MiembroLiga = { uid: u.uid, nombre: u.nombre, puntos: get().puntosTotales(m) };
-        // Asegura la liga general pública de esta modalidad
-        if (get().ligas.some((l) => l.id === idLigaGeneral(m))) return;
-        if (u.demo) {
-          set({ ligas: [ligaGeneralDemo(m, miembro), ...get().ligas] });
-          return;
-        }
-        const general = await asegurarLigaGeneral(miembro, m);
-        set({ ligas: [...get().ligas.filter((l) => l.id !== general.id), general] });
-      },
-
-      comprar: (id) => {
-        const { modalidadActiva, equipos, jugadores } = get();
-        const e = equipos[modalidadActiva];
-        const j = jugadores.find((x) => x.id === id);
-        if (!j) return 'Jugador no encontrado';
-        if (!categoriasDeModalidad(modalidadActiva).includes(j.categoria))
-          return 'Ese jugador no es de esta modalidad';
-        if (e.plantillaIds.includes(id)) return 'Ya está en tu plantilla';
-        if (e.plantillaIds.length >= TAMANO_PLANTILLA) return `La plantilla está completa (${TAMANO_PLANTILLA})`;
-        if (j.valor > e.presupuesto) return 'No tienes presupuesto suficiente';
-        const nuevo: Equipo = {
-          ...e,
-          plantillaIds: [...e.plantillaIds, id],
-          presupuesto: e.presupuesto - j.valor,
-          operaciones: [
-            { tipo: 'compra', jugadorId: id, nombre: j.nombre, importe: j.valor, fecha: Date.now() },
-            ...e.operaciones,
-          ],
-        };
-        set({ equipos: { ...equipos, [modalidadActiva]: nuevo } });
-        sincronizarRemoto(get());
-        return null;
-      },
-
-      vender: (id) => {
-        const { modalidadActiva, equipos, jugadores } = get();
-        const e = equipos[modalidadActiva];
-        const j = jugadores.find((x) => x.id === id);
-        if (!j || !e.plantillaIds.includes(id)) return;
-        const alineacion = { ...e.alineacion };
-        Object.keys(alineacion).forEach((k) => {
-          if (alineacion[k] === id) alineacion[k] = null;
-        });
-        const nuevo: Equipo = {
-          ...e,
-          plantillaIds: e.plantillaIds.filter((x) => x !== id),
-          alineacion,
-          presupuesto: e.presupuesto + j.valor,
-          operaciones: [
-            { tipo: 'venta', jugadorId: id, nombre: j.nombre, importe: j.valor, fecha: Date.now() },
-            ...e.operaciones,
-          ],
-        };
-        set({ equipos: { ...equipos, [modalidadActiva]: nuevo } });
-        sincronizarRemoto(get());
-      },
-
-      alinear: (etiqueta, jugadorId) => {
-        const { modalidadActiva, equipos, jugadores } = get();
-        const e = equipos[modalidadActiva];
-        const hueco = HUECOS_ALINEACION.find((h) => h.etiqueta === etiqueta);
-        if (!hueco) return;
-        if (jugadorId) {
-          const j = jugadores.find((x) => x.id === jugadorId);
-          if (!j || !e.plantillaIds.includes(jugadorId) || j.posicion !== hueco.posicion) return;
-        }
-        const alineacion = { ...e.alineacion };
-        Object.keys(alineacion).forEach((k) => {
-          if (alineacion[k] === jugadorId) alineacion[k] = null;
-        });
-        alineacion[etiqueta] = jugadorId;
-        set({ equipos: { ...equipos, [modalidadActiva]: { ...e, alineacion } } });
-        sincronizarRemoto(get());
-      },
-
-      crearLigaPrivada: async (nombre, modalidad) => {
+      crearLiga: async (nombre, modalidad) => {
         const u = get().usuario!;
         const liga: Liga = {
-          id: `liga-${Date.now()}`,
+          id: `liga-${Date.now()}-${Math.floor(Math.random() * 1e4)}`,
           nombre: nombre.trim() || 'Mi liga',
           tipo: 'privada',
           modalidad,
           codigo: codigoLiga(),
           creador: u.uid,
-          miembros: [{ uid: u.uid, nombre: u.nombre, puntos: get().puntosTotales(modalidad) }],
+          creadaEn: Date.now(),
+          miembros: [{ uid: u.uid, nombre: u.nombre, puntos: 0 }],
+          pujas: {},
+          cicloPujas: 0,
+          ventas: [],
         };
         if (!u.demo) await crearLigaRemota(liga);
         set({ ligas: [...get().ligas, liga] });
-        await get().setModalidadActiva(modalidad);
         return liga;
       },
 
       unirsePorCodigo: async (codigo) => {
         const u = get().usuario!;
-        const miembro: MiembroLiga = { uid: u.uid, nombre: u.nombre, puntos: 0 };
         const normalizado = codigo.trim().toUpperCase();
         const local = get().ligas.find((l) => l.codigo === normalizado);
         if (local) return local;
         const remota = u.demo ? null : await buscarLigaPorCodigo(normalizado);
         if (!remota) return null;
-        miembro.puntos = get().puntosTotales(remota.modalidad);
         if (!remota.miembros.some((m) => m.uid === u.uid)) {
+          const miembro: MiembroLiga = { uid: u.uid, nombre: u.nombre, puntos: 0 };
           await unirseLigaRemota(remota.id, miembro);
           remota.miembros.push(miembro);
         }
@@ -283,37 +158,145 @@ export const useJuego = create<EstadoJuego>()(
         return remota;
       },
 
-      actualizarMercadoDiario: () => {
-        const hoy = new Date().toISOString().slice(0, 10);
-        const { ultimoDiaMercado, jugadores, usuario } = get();
-        if (ultimoDiaMercado === hoy || (firebaseConfigurado && usuario && !usuario.demo)) {
-          set({ ultimoDiaMercado: hoy });
-          return;
-        }
-        const actualizados = jugadores.map((j) => {
-          const ruido = Math.random() * 2 - 1;
-          const nuevoValor = actualizarValorDiario(j, ruido);
-          return { ...j, valor: nuevoValor, historialValor: [...j.historialValor.slice(-29), nuevoValor] };
+      asegurarEquipo: (ligaId) => {
+        const { equiposLiga, usuario, jugadores } = get();
+        if (equiposLiga[ligaId]) return !equiposLiga[ligaId].bienvenidaVista;
+        const liga = get().liga(ligaId);
+        if (!liga || !usuario || jugadores.length === 0) return false;
+        const inicial = plantillaInicial(ligaId, usuario.uid, liga, jugadores);
+        const equipo: EquipoLiga = {
+          plantillaIds: inicial.ids,
+          alineacion: { ...alineacionVacia(), ...alinearInicial(inicial.ids, jugadores) },
+          presupuesto: inicial.presupuesto,
+          bienvenidaVista: false,
+        };
+        set({ equiposLiga: { ...equiposLiga, [ligaId]: equipo } });
+        sincronizarRemoto(get());
+        return true;
+      },
+
+      marcarBienvenidaVista: (ligaId) => {
+        const e = get().equiposLiga[ligaId];
+        if (!e) return;
+        set({ equiposLiga: { ...get().equiposLiga, [ligaId]: { ...e, bienvenidaVista: true } } });
+        sincronizarRemoto(get());
+      },
+
+      refrescarLiga: async (ligaId) => {
+        const u = get().usuario;
+        if (!u || u.demo) return;
+        const remota = await cargarLiga(ligaId);
+        if (remota) set({ ligas: get().ligas.map((l) => (l.id === ligaId ? remota : l)) });
+      },
+
+      vender: (ligaId, jugadorId) => {
+        const e = get().equiposLiga[ligaId];
+        const j = get().jugador(jugadorId);
+        if (!e || !j || !e.plantillaIds.includes(jugadorId)) return;
+        const alineacion = { ...e.alineacion };
+        Object.keys(alineacion).forEach((k) => {
+          if (alineacion[k] === jugadorId) alineacion[k] = null;
         });
-        set({ jugadores: actualizados, ultimoDiaMercado: hoy });
+        set({
+          equiposLiga: {
+            ...get().equiposLiga,
+            [ligaId]: {
+              ...e,
+              plantillaIds: e.plantillaIds.filter((x) => x !== jugadorId),
+              alineacion,
+              presupuesto: e.presupuesto + j.valor,
+            },
+          },
+        });
+        sincronizarRemoto(get());
       },
 
+      alinear: (ligaId, etiqueta, jugadorId) => {
+        const e = get().equiposLiga[ligaId];
+        const hueco = HUECOS_ALINEACION.find((h) => h.etiqueta === etiqueta);
+        if (!e || !hueco) return;
+        if (jugadorId) {
+          const j = get().jugador(jugadorId);
+          if (!j || !e.plantillaIds.includes(jugadorId) || j.posicion !== hueco.posicion) return;
+        }
+        const alineacion = { ...e.alineacion };
+        Object.keys(alineacion).forEach((k) => {
+          if (alineacion[k] === jugadorId) alineacion[k] = null;
+        });
+        alineacion[etiqueta] = jugadorId;
+        set({ equiposLiga: { ...get().equiposLiga, [ligaId]: { ...e, alineacion } } });
+        sincronizarRemoto(get());
+      },
+
+      pujar: (ligaId, jugadorId, cantidad) => {
+        const { usuario, jugadores } = get();
+        const liga = get().liga(ligaId);
+        const equipo = get().equiposLiga[ligaId];
+        const j = get().jugador(jugadorId);
+        if (!liga || !equipo || !j || !usuario) return 'Liga o jugador no encontrado';
+        const pujasJugador = liga.pujas?.[jugadorId];
+        const error = validarPuja(cantidad, j, pujasJugador, equipo, jugadores);
+        if (error) return error;
+        const nueva: Puja = { uid: usuario.uid, nombre: usuario.nombre, cantidad, fecha: Date.now() };
+        const pujas = { ...(liga.pujas ?? {}) };
+        pujas[jugadorId] = [...(pujasJugador ?? []).filter((p) => p.uid !== usuario.uid), nueva];
+        const actualizada: Liga = { ...liga, pujas, cicloPujas: cicloActual(liga) };
+        set({ ligas: get().ligas.map((l) => (l.id === ligaId ? actualizada : l)) });
+        if (!usuario.demo) guardarPujas(ligaId, pujas, actualizada.cicloPujas!).catch(() => {});
+        return null;
+      },
+
+      sincronizarMercado: async (ligaId) => {
+        await get().refrescarLiga(ligaId);
+        const { usuario, jugadores } = get();
+        let liga = get().liga(ligaId);
+        if (!liga || !usuario) return;
+
+        // 1. Si hay pujas de un ciclo ya expirado, resolverlas → ventas
+        const ciclo = cicloActual(liga);
+        if ((liga.cicloPujas ?? 0) < ciclo && liga.pujas && Object.keys(liga.pujas).length > 0) {
+          const nuevasVentas = resolverPujas(liga.pujas, liga.cicloPujas ?? 0);
+          const ventas = [...(liga.ventas ?? []), ...nuevasVentas];
+          liga = { ...liga, pujas: {}, cicloPujas: ciclo, ventas };
+          set({ ligas: get().ligas.map((l) => (l.id === ligaId ? liga! : l)) });
+          if (!usuario.demo) await publicarResolucion(ligaId, ciclo, ventas).catch(() => {});
+        } else if ((liga.cicloPujas ?? 0) < ciclo) {
+          liga = { ...liga, cicloPujas: ciclo };
+          set({ ligas: get().ligas.map((l) => (l.id === ligaId ? liga! : l)) });
+        }
+
+        // 2. Reclamar mis subastas ganadas (si tengo hueco y dinero)
+        const equipo = get().equiposLiga[ligaId];
+        if (!equipo) return;
+        const misVentas = (liga.ventas ?? []).filter((v) => v.uid === usuario.uid && !v.reclamada);
+        if (misVentas.length === 0) return;
+        let plantillaIds = [...equipo.plantillaIds];
+        let presupuesto = equipo.presupuesto;
+        const ventasActualizadas = (liga.ventas ?? []).map((v) => {
+          if (v.uid !== usuario.uid || v.reclamada) return v;
+          const j = jugadores.find((x) => x.id === v.jugadorId);
+          const equipoTmp: EquipoLiga = { ...equipo, plantillaIds, presupuesto };
+          if (j && presupuesto >= v.cantidad && !plantillaIds.includes(j.id) && cabeEnPlantilla(equipoTmp, j, jugadores)) {
+            plantillaIds = [...plantillaIds, j.id];
+            presupuesto -= v.cantidad;
+          }
+          return { ...v, reclamada: true };
+        });
+        set({
+          equiposLiga: { ...get().equiposLiga, [ligaId]: { ...equipo, plantillaIds, presupuesto } },
+          ligas: get().ligas.map((l) => (l.id === ligaId ? { ...l, ventas: ventasActualizadas } : l)),
+        });
+        if (!usuario.demo) await guardarVentas(ligaId, ventasActualizadas).catch(() => {});
+        sincronizarRemoto(get());
+      },
+
+      liga: (ligaId) => get().ligas.find((l) => l.id === ligaId),
       jugador: (id) => get().jugadores.find((j) => j.id === id),
+      equipoDe: (ligaId) => get().equiposLiga[ligaId],
 
-      jugadoresDeModalidad: (m) => {
-        const cats = categoriasDeModalidad(m ?? get().modalidadActiva);
-        return get().jugadores.filter((j) => cats.includes(j.categoria));
-      },
-
-      equipoActivo: () => get().equipos[get().modalidadActiva],
-
-      valorEquipo: (m) => {
-        const e = get().equipos[m ?? get().modalidadActiva];
-        return e.plantillaIds.map((id) => get().jugador(id)?.valor ?? 0).reduce((s, v) => s + v, 0);
-      },
-
-      puntosJornada: (m) => {
-        const e = get().equipos[m ?? get().modalidadActiva];
+      puntosJornada: (ligaId) => {
+        const e = get().equiposLiga[ligaId];
+        if (!e) return 0;
         return (
           Math.round(
             Object.values(e.alineacion)
@@ -326,8 +309,9 @@ export const useJuego = create<EstadoJuego>()(
         );
       },
 
-      puntosTotales: (m) => {
-        const e = get().equipos[m ?? get().modalidadActiva];
+      puntosTotales: (ligaId) => {
+        const e = get().equiposLiga[ligaId];
+        if (!e) return 0;
         return (
           Math.round(
             Object.values(e.alineacion)
@@ -336,31 +320,49 @@ export const useJuego = create<EstadoJuego>()(
           ) / 10
         );
       },
+
+      valorEquipo: (ligaId) => {
+        const e = get().equiposLiga[ligaId];
+        if (!e) return 0;
+        return e.plantillaIds.map((id) => get().jugador(id)?.valor ?? 0).reduce((s, v) => s + v, 0);
+      },
+
+      actualizarMercadoDiario: () => {
+        // Evolución local de valores en demo; en producción la aplica el scraper
+        const hoy = new Date().toISOString().slice(0, 10);
+        const { ultimoDiaMercado, jugadores, usuario } = get();
+        if (ultimoDiaMercado === hoy || (firebaseConfigurado && usuario && !usuario.demo)) {
+          set({ ultimoDiaMercado: hoy });
+          return;
+        }
+        const actualizados = jugadores.map((j) => {
+          const nuevoValor = actualizarValorDiario(j, Math.random() * 2 - 1);
+          return { ...j, valor: nuevoValor, historialValor: [...j.historialValor.slice(-29), nuevoValor] };
+        });
+        set({ jugadores: actualizados, ultimoDiaMercado: hoy });
+      },
     }),
     {
-      name: 'voleyfantasy-v2',
+      name: 'voleyfantasy-v3',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (s) => ({
         usuario: s.usuario?.demo ? s.usuario : null,
         jugadores: s.jugadores,
-        equipos: s.equipos,
-        modalidadActiva: s.modalidadActiva,
+        calendario: s.calendario,
         ligas: s.ligas,
+        equiposLiga: s.equiposLiga,
         ultimoDiaMercado: s.ultimoDiaMercado,
       }),
     },
   ),
 );
 
-/** Sincroniza el estado del usuario (todos sus equipos) con Firestore. */
+/** Sincroniza equipos y puntos con Firestore sin bloquear la UI. */
 function sincronizarRemoto(s: EstadoJuego): void {
   const u = s.usuario;
   if (!u || u.demo || !firebaseConfigurado) return;
-  const equipos: Record<string, { plantillaIds: string[]; alineacion: Alineacion; presupuesto: number }> = {};
-  (Object.keys(s.equipos) as Modalidad[]).forEach((m) => {
-    const e = s.equipos[m];
-    equipos[m] = { plantillaIds: e.plantillaIds, alineacion: e.alineacion, presupuesto: e.presupuesto };
-  });
-  guardarEstadoUsuario(u.uid, { equipos, modalidadActiva: s.modalidadActiva, nombre: u.nombre }).catch(() => {});
-  actualizarPuntosEnLigas(u.uid, s.ligas, (m) => s.puntosTotales(m)).catch(() => {});
+  guardarEstadoUsuario(u.uid, { equiposLiga: s.equiposLiga, nombre: u.nombre }).catch(() => {});
+  actualizarPuntosEnLigas(u.uid, s.ligas, (ligaId) => s.puntosTotales(ligaId)).catch(() => {});
 }
+
+export { nombreModalidad };

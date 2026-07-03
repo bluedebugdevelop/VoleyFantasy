@@ -147,6 +147,27 @@ export function generarJugadoresSeed(): Jugador[] {
         media,
       });
     });
+
+    // Entrenador sintético del equipo: puntúa como la media de su plantilla
+    const delEquipo = jugadores.filter((j) => j.equipo === equipo);
+    const mediaEq = Math.round((delEquipo.reduce((s, j) => s + j.media, 0) / delEquipo.length) * 10) / 10;
+    const valorEq = valorInicial(mediaEq);
+    jugadores.push({
+      id: `${e}-entrenador`,
+      nombre: `Míster ${equipo}`,
+      equipo,
+      categoria,
+      dorsal: 0,
+      posicion: 'entrenador',
+      valor: valorEq,
+      historialValor: [valorEq],
+      historial: [],
+      puntosPorJornada: delEquipo[0]?.puntosPorJornada.map((_, i) =>
+        Math.round((delEquipo.reduce((s, j) => s + (j.puntosPorJornada[i] ?? 0), 0) / delEquipo.length) * 10) / 10,
+      ) ?? [mediaEq],
+      puntosTotales: Math.round(delEquipo.reduce((s, j) => s + j.puntosTotales, 0) / delEquipo.length),
+      media: mediaEq,
+    });
   });
 
   return jugadores;

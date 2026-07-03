@@ -21,11 +21,11 @@ export default function GraficoValor({ historial }: { historial: number[] }) {
           return ultima ? (
             <LinearGradient
               key={i}
-              colors={[colores.oro, colores.amarillo]}
+              colors={[colores.oroClaro, colores.oro]}
               style={[estilos.barra, { height: altura }]}
             />
           ) : (
-            <View key={i} style={[estilos.barra, { height: altura, backgroundColor: colores.primarioClaro }]} />
+            <View key={i} style={[estilos.barra, { height: altura, backgroundColor: colores.primarioOscuro }]} />
           );
         })}
       </View>

@@ -1,55 +1,61 @@
 /**
- * Sistema de diseño de VoleyFantasy.
+ * Sistema de diseño de VoleyFantasy v2.
  *
- * Tema oscuro premium inspirado en los fantasy modernos (LaLiga Fantasy,
- * Biwenger) con la identidad de la RFEVB: azul marino profundo de base y
- * acentos en rojo y oro/amarillo.
+ * Paleta slate oscura profesional (estilo apps fantasy modernas): fondo casi
+ * negro azulado, tarjetas azul pizarra, acento azul brillante y colores
+ * semánticos nítidos. El oro se reserva para capitán/destacados.
  */
 export const colores = {
-  // Marca
-  primario: '#0E2A6B',
-  primarioClaro: '#1E44A0',
-  rojo: '#E11D3C',
-  rojoOscuro: '#B0122B',
-  amarillo: '#FFC400',
-  oro: '#FFD24C',
+  // Superficies
+  fondo: '#0F1419',
+  fondoAlt: '#151B24',
+  superficie: '#1A2332',
+  superficieAlt: '#212D40',
+  superficieClara: '#2A3850',
 
-  // Superficies (fondo oscuro)
-  fondo: '#080F24',
-  fondoAlt: '#0C1530',
-  superficie: '#121D3D',
-  superficieAlt: '#18244B',
-  superficieClara: '#1E2C57',
+  // Marca / acentos
+  primario: '#3B82F6',
+  primarioOscuro: '#1D4ED8',
+  azulVivo: '#0892D0',
+  oro: '#F59E0B',
+  oroClaro: '#FBBF24',
 
   // Texto
   texto: '#FFFFFF',
-  textoSuave: '#93A1C4',
-  textoTenue: '#5E6C93',
+  textoSuave: '#CBD5E1',
+  textoTenue: '#94A3B8',
+  textoMuted: '#64748B',
   textoInverso: '#FFFFFF',
 
-  // Estados
-  verde: '#22C55E',
-  verdeTenue: 'rgba(34,197,94,0.15)',
-  rojoTenue: 'rgba(225,29,60,0.15)',
+  // Semánticos
+  verde: '#10B981',
+  rojo: '#EF4444',
+  verdeTenue: 'rgba(16,185,129,0.14)',
+  rojoTenue: 'rgba(239,68,68,0.14)',
+  azulTenue: 'rgba(59,130,246,0.14)',
+  oroTenue: 'rgba(245,158,11,0.16)',
 
-  borde: 'rgba(255,255,255,0.08)',
-  bordeClaro: 'rgba(255,255,255,0.14)',
-  overlay: 'rgba(4,8,20,0.72)',
+  // Bordes
+  borde: '#334155',
+  bordeClaro: '#475569',
+  overlay: 'rgba(5,8,14,0.78)',
 } as const;
 
-/** Degradados reutilizables (para expo-linear-gradient). */
+/** Degradados reutilizables (expo-linear-gradient). */
 export const degradados = {
-  fondo: ['#0C1530', '#080F24'] as const,
-  marca: ['#1E44A0', '#0E2A6B'] as const,
-  rojo: ['#F0324F', '#B0122B'] as const,
-  oro: ['#FFD24C', '#F5A623'] as const,
-  tarjetaHero: ['#1E44A0', '#0E2A6B', '#0A1F52'] as const,
-  pista: ['#F0A04B', '#E1832B'] as const,
+  fondo: ['#151B24', '#0F1419'] as const,
+  marca: ['#3B82F6', '#1D4ED8'] as const,
+  azul: ['#0892D0', '#1D4ED8'] as const,
+  oro: ['#FBBF24', '#D97706'] as const,
+  tarjetaHero: ['#1E3A8A', '#1A2332'] as const,
+  pista: ['#B45309', '#92400E'] as const, // taraflex
+  pistaLibero: ['#155E75', '#164E63'] as const, // zona trasera
+  exito: ['#10B981', '#047857'] as const,
 };
 
 export const espaciado = { xs: 4, s: 8, m: 12, l: 16, xl: 24, xxl: 32 };
 
-export const radios = { s: 10, m: 14, l: 20, xl: 28, pill: 999 };
+export const radios = { s: 10, m: 12, l: 16, xl: 20, pill: 999 };
 
 export const tipografia = {
   regular: 'Inter_400Regular',
@@ -59,24 +65,36 @@ export const tipografia = {
   extrabold: 'Inter_800ExtraBold',
 } as const;
 
-/** Sombra suave para tarjetas sobre fondo oscuro. */
 export const sombra = {
   shadowColor: '#000000',
-  shadowOpacity: 0.35,
-  shadowRadius: 16,
-  shadowOffset: { width: 0, height: 8 },
+  shadowOpacity: 0.3,
+  shadowRadius: 12,
+  shadowOffset: { width: 0, height: 6 },
   elevation: 8,
 } as const;
 
 export const sombraSuave = {
   shadowColor: '#000000',
-  shadowOpacity: 0.25,
-  shadowRadius: 8,
-  shadowOffset: { width: 0, height: 3 },
-  elevation: 4,
+  shadowOpacity: 0.22,
+  shadowRadius: 4,
+  shadowOffset: { width: 0, height: 2 },
+  elevation: 3,
 } as const;
 
 export function formatearValor(valor: number): string {
-  if (valor >= 1_000_000) return `${(valor / 1_000_000).toFixed(2)} M€`;
+  if (valor >= 1_000_000) {
+    const m = valor / 1_000_000;
+    return `${m >= 100 ? m.toFixed(0) : m.toFixed(1)} M€`;
+  }
   return `${Math.round(valor / 1000)} K€`;
+}
+
+/** hh:mm:ss restantes hasta un timestamp. */
+export function formatearCuentaAtras(hastaMs: number): string {
+  const restante = Math.max(0, hastaMs - Date.now());
+  const h = Math.floor(restante / 3_600_000);
+  const m = Math.floor((restante % 3_600_000) / 60_000);
+  const s = Math.floor((restante % 60_000) / 1000);
+  const dd = (n: number) => String(n).padStart(2, '0');
+  return `${dd(h)}:${dd(m)}:${dd(s)}`;
 }

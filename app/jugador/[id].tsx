@@ -1,9 +1,8 @@
 import React from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import Boton from '@/components/Boton';
 import ChipPosicion from '@/components/ChipPosicion';
 import GraficoValor from '@/components/GraficoValor';
 import FondoDegradado from '@/components/FondoDegradado';
@@ -14,9 +13,6 @@ import { variacionDiaria } from '@/logic/market';
 export default function DetalleJugador() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const jugador = useJuego((s) => s.jugador)(id);
-  const plantillaIds = useJuego((s) => s.equipoActivo().plantillaIds);
-  const comprar = useJuego((s) => s.comprar);
-  const vender = useJuego((s) => s.vender);
 
   if (!jugador) {
     return (
@@ -26,7 +22,6 @@ export default function DetalleJugador() {
     );
   }
 
-  const enPlantilla = plantillaIds.includes(jugador.id);
   const variacion = variacionDiaria(jugador);
   const positivo = variacion >= 0;
   const totales = jugador.historial.reduce(
@@ -68,17 +63,6 @@ export default function DetalleJugador() {
           <Dato titulo="Total" valor={`${jugador.puntosTotales}`} color={colores.oro} />
         </View>
 
-        <Boton
-          titulo={enPlantilla ? `Vender por ${formatearValor(jugador.valor)}` : `Fichar por ${formatearValor(jugador.valor)}`}
-          variante={enPlantilla ? 'fantasma' : 'rojo'}
-          icono={<Ionicons name={enPlantilla ? 'remove-circle-outline' : 'add-circle-outline'} size={18} color={enPlantilla ? colores.texto : '#fff'} />}
-          onPress={() => {
-            if (enPlantilla) return vender(jugador.id);
-            const error = comprar(jugador.id);
-            if (error) Alert.alert('No se pudo fichar', error);
-          }}
-        />
-
         <Titulo icono="stats-chart" texto="Evolución de valor" />
         <View style={estilos.tarjeta}>
           <GraficoValor historial={jugador.historialValor} />
@@ -112,7 +96,7 @@ export default function DetalleJugador() {
 
 function colorPuntos(p: number): string {
   if (p >= 15) return colores.verde;
-  if (p >= 8) return colores.amarillo;
+  if (p >= 8) return colores.oroClaro;
   if (p > 0) return '#F5A623';
   return colores.rojo;
 }

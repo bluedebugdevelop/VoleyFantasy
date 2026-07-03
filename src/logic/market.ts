@@ -1,23 +1,25 @@
 import { Jugador } from '../types';
 import { forma } from './scoring';
 
-export const VALOR_MINIMO = 100_000;
-export const VALOR_MAXIMO = 25_000_000;
+export const VALOR_MINIMO = 500_000;
+export const VALOR_MAXIMO = 30_000_000;
 
 function limitar(v: number): number {
   return Math.max(VALOR_MINIMO, Math.min(VALOR_MAXIMO, Math.round(v / 10_000) * 10_000));
 }
 
-/** Valor inicial de mercado en función de la media de puntos fantasy. */
+/**
+ * Valor inicial de mercado en función de la media de puntos fantasy.
+ * Escalado para una economía de 150 M€: un titular medio vale 6-9 M€, de modo
+ * que una plantilla inicial de 7 suma ~50-60 M€.
+ */
 export function valorInicial(mediaPuntos: number): number {
-  return limitar(150_000 + Math.max(0, mediaPuntos) * 450_000);
+  return limitar(1_000_000 + Math.max(0, mediaPuntos) * 600_000);
 }
 
 /**
  * Actualización diaria de valor: sube o baja según la forma reciente frente a
- * la media de temporada (rendimiento relativo), con una variación máxima del
- * ±5% diario para que el mercado sea estable pero vivo, igual que en los
- * fantasy de fútbol.
+ * la media de temporada, con variación máxima de ±5 % diario.
  */
 export function actualizarValorDiario(jugador: Jugador, ruidoDemanda = 0): number {
   const f = forma(jugador.puntosPorJornada);

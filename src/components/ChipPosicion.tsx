@@ -5,11 +5,21 @@ import { radios, tipografia } from '../theme';
 
 /** Color identificativo de cada posición (consistente en toda la app). */
 export const COLOR_POSICION: Record<Posicion, string> = {
-  colocador: '#FFC400',
-  opuesto: '#E11D3C',
-  receptor: '#2E90FA',
-  central: '#A56BFF',
-  libero: '#22C55E',
+  colocador: '#F59E0B',
+  opuesto: '#EF4444',
+  receptor: '#3B82F6',
+  central: '#10B981',
+  libero: '#A855F7',
+  entrenador: '#94A3B8',
+};
+
+export const ETIQUETA_POSICION: Record<Posicion, string> = {
+  colocador: 'COL',
+  opuesto: 'OPU',
+  receptor: 'REC',
+  central: 'CEN',
+  libero: 'LIB',
+  entrenador: 'ENT',
 };
 
 export default function ChipPosicion({ posicion, corto }: { posicion: Posicion; corto?: boolean }) {
@@ -18,7 +28,7 @@ export default function ChipPosicion({ posicion, corto }: { posicion: Posicion; 
     <View style={[estilos.chip, { backgroundColor: `${color}22`, borderColor: `${color}55` }]}>
       <View style={[estilos.punto, { backgroundColor: color }]} />
       <Text style={[estilos.texto, { color }]}>
-        {corto ? NOMBRE_POSICION[posicion].slice(0, 3).toUpperCase() : NOMBRE_POSICION[posicion]}
+        {corto ? ETIQUETA_POSICION[posicion] : NOMBRE_POSICION[posicion]}
       </Text>
     </View>
   );

@@ -6,27 +6,38 @@ import { colores, degradados, radios, sombraSuave, tipografia } from '../theme';
 interface Props {
   titulo: string;
   onPress: () => void;
-  variante?: 'primario' | 'rojo' | 'oro' | 'claro' | 'fantasma';
+  variante?: 'primario' | 'oro' | 'verde' | 'claro' | 'fantasma' | 'peligro';
   cargando?: boolean;
   deshabilitado?: boolean;
   icono?: React.ReactNode;
   estilo?: ViewStyle;
+  pequeno?: boolean;
 }
 
-export default function Boton({ titulo, onPress, variante = 'rojo', cargando, deshabilitado, icono, estilo }: Props) {
-  const esGradiente = variante === 'primario' || variante === 'rojo' || variante === 'oro';
+export default function Boton({
+  titulo,
+  onPress,
+  variante = 'primario',
+  cargando,
+  deshabilitado,
+  icono,
+  estilo,
+  pequeno,
+}: Props) {
+  const esGradiente = variante === 'primario' || variante === 'oro' || variante === 'verde';
   const gradiente =
-    variante === 'oro' ? degradados.oro : variante === 'primario' ? degradados.marca : degradados.rojo;
-  const colorTexto = variante === 'oro' ? colores.primario : variante === 'claro' ? colores.texto : colores.textoInverso;
+    variante === 'oro' ? degradados.oro : variante === 'verde' ? degradados.exito : degradados.marca;
+  const colorTexto =
+    variante === 'oro' ? '#1F1300' : variante === 'peligro' ? colores.rojo : colores.texto;
 
   const contenido = (
-    <View style={estilos.contenido}>
+    <View style={[estilos.contenido, pequeno && estilos.contenidoPequeno]}>
       {cargando ? (
         <ActivityIndicator color={colorTexto} />
       ) : (
         <>
           {icono}
-          <Text style={[estilos.texto, { color: colorTexto }]}>{titulo}</Text>
+          <Text style={[estilos.texto, pequeno && { fontSize: 13 }, { color: colorTexto }]}>{titulo}</Text>
         </>
       )}
     </View>
@@ -39,7 +50,8 @@ export default function Boton({ titulo, onPress, variante = 'rojo', cargando, de
       style={({ pressed }) => [
         estilos.base,
         !esGradiente && {
-          backgroundColor: variante === 'claro' ? colores.superficieClara : 'transparent',
+          backgroundColor:
+            variante === 'claro' ? colores.superficieClara : variante === 'peligro' ? colores.rojoTenue : 'transparent',
           borderWidth: variante === 'fantasma' ? 1 : 0,
           borderColor: colores.bordeClaro,
         },
@@ -60,15 +72,16 @@ export default function Boton({ titulo, onPress, variante = 'rojo', cargando, de
 }
 
 const estilos = StyleSheet.create({
-  base: { borderRadius: radios.pill, overflow: 'hidden' },
-  gradiente: { borderRadius: radios.pill },
+  base: { borderRadius: radios.l, overflow: 'hidden' },
+  gradiente: { borderRadius: radios.l },
   contenido: {
     flexDirection: 'row',
     gap: 8,
-    paddingVertical: 15,
-    paddingHorizontal: 22,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  contenidoPequeno: { paddingVertical: 8, paddingHorizontal: 14 },
   texto: { fontSize: 15, fontFamily: tipografia.bold, letterSpacing: 0.2 },
 });

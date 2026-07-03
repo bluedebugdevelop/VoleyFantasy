@@ -37,6 +37,9 @@ const AJUSTES: Record<Posicion, AjustePosicion> = {
   central: { recepcion: 1.0, bloqueo: 1.2, basePorSet: 1.0 },
   receptor: { recepcion: 1.2, bloqueo: 1.0, basePorSet: 1.0 },
   opuesto: { recepcion: 1.0, bloqueo: 1.0, basePorSet: 1.0 },
+  // El entrenador no acumula estadísticas propias: sus puntos son la media de
+  // su equipo (los calcula el scraper / seed, no esta fórmula).
+  entrenador: { recepcion: 1.0, bloqueo: 1.0, basePorSet: 1.0 },
 };
 
 /** Puntos fantasy de un jugador en una jornada. */

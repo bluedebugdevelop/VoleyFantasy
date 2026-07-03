@@ -14,9 +14,9 @@ export default function Index() {
     return (
       <FondoDegradado style={{ alignItems: 'center', justifyContent: 'center', gap: 28 }}>
         <Logo />
-        <ActivityIndicator size="large" color={colores.oro} />
+        <ActivityIndicator size="large" color={colores.primario} />
       </FondoDegradado>
     );
   }
-  return usuario ? <Redirect href="/(tabs)" /> : <Redirect href="/(auth)/login" />;
+  return usuario ? <Redirect href="/home" /> : <Redirect href="/(auth)/login" />;
 }

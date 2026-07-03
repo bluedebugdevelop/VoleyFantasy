@@ -1,7 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Jugador } from '../types';
 import { colores, espaciado, formatearValor, radios, sombraSuave, tipografia } from '../theme';
 import { variacionDiaria } from '../logic/market';
@@ -10,9 +9,11 @@ import ChipPosicion, { COLOR_POSICION } from './ChipPosicion';
 interface Props {
   jugador: Jugador;
   accion?: React.ReactNode;
+  extra?: React.ReactNode;
+  sinNavegar?: boolean;
 }
 
-export default function TarjetaJugador({ jugador, accion }: Props) {
+export default function TarjetaJugador({ jugador, accion, extra, sinNavegar }: Props) {
   const router = useRouter();
   const variacion = variacionDiaria(jugador);
   const positivo = variacion >= 0;
@@ -22,19 +23,17 @@ export default function TarjetaJugador({ jugador, accion }: Props) {
   return (
     <Pressable
       style={({ pressed }) => [estilos.tarjeta, { opacity: pressed ? 0.9 : 1 }]}
-      onPress={() => router.push({ pathname: '/jugador/[id]', params: { id: jugador.id } })}
+      onPress={
+        sinNavegar ? undefined : () => router.push({ pathname: '/jugador/[id]', params: { id: jugador.id } })
+      }
     >
-      {/* Franja de color de la posición */}
       <View style={[estilos.franja, { backgroundColor: color }]} />
 
-      <LinearGradient
-        colors={[colores.superficieAlt, colores.superficie]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={estilos.avatar}
-      >
-        <Text style={[estilos.dorsal, { color }]}>{jugador.dorsal}</Text>
-      </LinearGradient>
+      <View style={[estilos.avatar, { borderColor: `${color}66` }]}>
+        <Text style={[estilos.avatarTexto, { color }]}>
+          {jugador.posicion === 'entrenador' ? 'E' : jugador.dorsal}
+        </Text>
+      </View>
 
       <View style={{ flex: 1 }}>
         <Text style={estilos.nombre} numberOfLines={1}>{jugador.nombre}</Text>
@@ -42,9 +41,10 @@ export default function TarjetaJugador({ jugador, accion }: Props) {
         <View style={{ flexDirection: 'row', gap: 6, marginTop: 6, alignItems: 'center' }}>
           <ChipPosicion posicion={jugador.posicion} corto />
           <View style={estilos.pill}>
-            <Text style={estilos.pillTexto}>Media {jugador.media}</Text>
+            <Text style={estilos.pillTexto}>{jugador.media} pts/p</Text>
           </View>
         </View>
+        {extra}
       </View>
 
       <View style={{ alignItems: 'flex-end', gap: 3 }}>
@@ -66,7 +66,7 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     gap: espaciado.m,
     backgroundColor: colores.superficie,
-    borderRadius: radios.l,
+    borderRadius: radios.m,
     padding: espaciado.m,
     paddingLeft: espaciado.l,
     marginBottom: espaciado.s + 2,
@@ -75,23 +75,23 @@ const estilos = StyleSheet.create({
     overflow: 'hidden',
     ...sombraSuave,
   },
-  franja: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 4 },
+  franja: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 3 },
   avatar: {
-    width: 46,
-    height: 46,
-    borderRadius: radios.m,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colores.superficieAlt,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colores.bordeClaro,
+    borderWidth: 1.5,
   },
-  dorsal: { fontFamily: tipografia.extrabold, fontSize: 18 },
+  avatarTexto: { fontFamily: tipografia.extrabold, fontSize: 16 },
   nombre: { fontSize: 15, fontFamily: tipografia.bold, color: colores.texto },
-  equipo: { fontSize: 12, fontFamily: tipografia.regular, color: colores.textoSuave, marginTop: 1 },
+  equipo: { fontSize: 12, fontFamily: tipografia.regular, color: colores.textoTenue, marginTop: 1 },
   pill: { backgroundColor: colores.superficieClara, borderRadius: radios.pill, paddingHorizontal: 8, paddingVertical: 2 },
   pillTexto: { fontSize: 10, fontFamily: tipografia.semibold, color: colores.textoSuave },
   valor: { fontSize: 15, fontFamily: tipografia.extrabold, color: colores.texto },
   variacion: { borderRadius: radios.pill, paddingHorizontal: 8, paddingVertical: 2 },
   variacionTexto: { fontSize: 11, fontFamily: tipografia.bold },
-  puntos: { fontSize: 11, fontFamily: tipografia.semibold, color: colores.oro, marginTop: 1 },
+  puntos: { fontSize: 11, fontFamily: tipografia.semibold, color: colores.primario, marginTop: 1 },
 });

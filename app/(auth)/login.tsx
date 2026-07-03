@@ -97,7 +97,7 @@ export default function Login() {
                   }
                 />
 
-                <Boton titulo="Iniciar sesión" onPress={entrar} variante="rojo" cargando={cargando} estilo={{ marginTop: 4 }} />
+                <Boton titulo="Iniciar sesión" onPress={entrar} variante="primario" cargando={cargando} estilo={{ marginTop: 4 }} />
 
                 {googleConfigurado && (
                   <>
@@ -125,7 +125,7 @@ export default function Login() {
                 <Text style={estilos.subtitulo}>
                   Firebase aún no está configurado. Juega con datos reales de la RFEVB guardados en tu dispositivo.
                 </Text>
-                <Boton titulo="Empezar a jugar" onPress={entrarDemo} variante="rojo" estilo={{ marginTop: 8 }} />
+                <Boton titulo="Empezar a jugar" onPress={entrarDemo} variante="primario" estilo={{ marginTop: 8 }} />
               </>
             )}
           </View>

@@ -63,7 +63,7 @@ export default function Registro() {
             <Campo icono="mail-outline" placeholder="Email" valor={email} onChange={setEmail} tipo="email" />
             <Campo icono="lock-closed-outline" placeholder="Contraseña (mín. 6)" valor={contrasena} onChange={setContrasena} seguro />
 
-            <Boton titulo="Crear cuenta" onPress={registrar} variante="rojo" cargando={cargando} estilo={{ marginTop: 8 }} />
+            <Boton titulo="Crear cuenta" onPress={registrar} variante="primario" cargando={cargando} estilo={{ marginTop: 8 }} />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

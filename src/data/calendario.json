@@ -1,0 +1,271 @@
+{
+  "sp1m": [
+    {
+      "jornada": "26ª Jornada",
+      "fecha": "11/04/2026 - 16:00",
+      "local": "Cisneros La Laguna",
+      "visitante": "Conectabalear CV Manacor",
+      "resultado": "0-3",
+      "categoria": "sp1m",
+      "ts": 1775919600000
+    },
+    {
+      "jornada": "26ª Jornada",
+      "fecha": "11/04/2026 - 18:30",
+      "local": "Pamesa Voleibol Teruel",
+      "visitante": "Grupo Herce Soria",
+      "resultado": "1-3",
+      "categoria": "sp1m",
+      "ts": 1775928600000
+    },
+    {
+      "jornada": "26ª Jornada",
+      "fecha": "11/04/2026 - 18:30",
+      "local": "Conqueridor Valencia",
+      "visitante": "CV Melilla",
+      "resultado": "2-3",
+      "categoria": "sp1m",
+      "ts": 1775928600000
+    },
+    {
+      "jornada": "26ª Jornada",
+      "fecha": "17/04/2026 - 19:30",
+      "local": "CV Melilla",
+      "visitante": "Conqueridor Valencia",
+      "resultado": "0-3",
+      "categoria": "sp1m",
+      "ts": 1776450600000
+    },
+    {
+      "jornada": "26ª Jornada",
+      "fecha": "25/04/2026 - 18:00",
+      "local": "Conectabalear CV Manacor",
+      "visitante": "CV Guaguas",
+      "resultado": "1-3",
+      "categoria": "sp1m",
+      "ts": 1777136400000
+    },
+    {
+      "jornada": "26ª Jornada",
+      "fecha": "03/05/2026 - 13:00",
+      "local": "Grupo Herce Soria",
+      "visitante": "CV Melilla",
+      "resultado": "0-3",
+      "categoria": "sp1m",
+      "ts": 1777809600000
+    },
+    {
+      "jornada": "26ª Jornada",
+      "fecha": "10/05/2026 - 17:00",
+      "local": "CV Melilla",
+      "visitante": "CV Guaguas",
+      "resultado": "0-3",
+      "categoria": "sp1m",
+      "ts": 1778428800000
+    }
+  ],
+  "sp1f": [
+    {
+      "jornada": "22ªJornada",
+      "fecha": "14/03/2026 - 17:00",
+      "local": "DSV CV Sant Cugat",
+      "visitante": "Avarca de Menorca",
+      "resultado": "0-3",
+      "categoria": "sp1f",
+      "ts": 1773504000000
+    },
+    {
+      "jornada": "22ªJornada",
+      "fecha": "14/03/2026 - 17:00",
+      "local": "Club Voleibol Melilla",
+      "visitante": "Fundación Cajasol Andalucía",
+      "resultado": "1-3",
+      "categoria": "sp1f",
+      "ts": 1773504000000
+    },
+    {
+      "jornada": "22ªJornada",
+      "fecha": "14/03/2026 - 17:00",
+      "local": "Kiele Socuellamos",
+      "visitante": "OCISA Haro Rioja Voley",
+      "resultado": "0-3",
+      "categoria": "sp1f",
+      "ts": 1773504000000
+    },
+    {
+      "jornada": "22ªJornada",
+      "fecha": "14/03/2026 - 17:00",
+      "local": "Feel Alcobendas",
+      "visitante": "Arenal Emevé",
+      "resultado": "0-3",
+      "categoria": "sp1f",
+      "ts": 1773504000000
+    },
+    {
+      "jornada": "22ªJornada",
+      "fecha": "21/03/2026 - 18:00",
+      "local": "OCISA Haro Rioja Voley",
+      "visitante": "Heidelberg Volkswagen",
+      "resultado": "0-3",
+      "categoria": "sp1f",
+      "ts": 1774112400000
+    },
+    {
+      "jornada": "22ªJornada",
+      "fecha": "22/03/2026 - 18:00",
+      "local": "DSV CV Sant Cugat",
+      "visitante": "Fundación Cajasol Andalucía",
+      "resultado": "1-3",
+      "categoria": "sp1f",
+      "ts": 1774198800000
+    },
+    {
+      "jornada": "22ªJornada",
+      "fecha": "28/03/2026 - 19:00",
+      "local": "Avarca de Menorca",
+      "visitante": "CV Tenerife Libby's La Laguna",
+      "resultado": "2-3",
+      "categoria": "sp1f",
+      "ts": 1774720800000
+    },
+    {
+      "jornada": "22ªJornada",
+      "fecha": "11/04/2026 - 16:00",
+      "local": "Emalsa Gran Canaria",
+      "visitante": "F. Cajasol Andalucía VB",
+      "resultado": "2-3",
+      "categoria": "sp1f",
+      "ts": 1775919600000
+    },
+    {
+      "jornada": "22ªJornada",
+      "fecha": "11/04/2026 - 18:00",
+      "local": "CV Tenerife Libby's La Laguna",
+      "visitante": "Heidelberg Volkswagen",
+      "resultado": "2-3",
+      "categoria": "sp1f",
+      "ts": 1775926800000
+    }
+  ],
+  "sp2m": [
+    {
+      "jornada": "22ª jornada",
+      "fecha": "21/03/2026 - 17:00",
+      "local": "Familycash Xátiva Voleibol",
+      "visitante": "Grupo Egido Pinto",
+      "resultado": "0-3",
+      "categoria": "sp2m",
+      "ts": 1774108800000
+    },
+    {
+      "jornada": "22ª jornada",
+      "fecha": "21/03/2026 - 17:00",
+      "local": "AD Voleibol Rivas",
+      "visitante": "CV Almendralejo Extremadura",
+      "resultado": "1-3",
+      "categoria": "sp2m",
+      "ts": 1774108800000
+    },
+    {
+      "jornada": "22ª jornada",
+      "fecha": "21/03/2026 - 17:00",
+      "local": "Grupo Alfil-Marbella-Costa del Vóley",
+      "visitante": "Conqueridor Valencia",
+      "resultado": "2-3",
+      "categoria": "sp2m",
+      "ts": 1774108800000
+    }
+  ],
+  "sp2f": [
+    {
+      "jornada": "22ª Jornada",
+      "fecha": "21/03/2026 - 19:30",
+      "local": "Voleibol Astillero",
+      "visitante": "Santa Cruz Cuesta Piedra",
+      "resultado": "0-3",
+      "categoria": "sp2f",
+      "ts": 1774117800000
+    },
+    {
+      "jornada": "22ª Jornada",
+      "fecha": "21/03/2026 - 19:30",
+      "local": "Madrid Chamberí",
+      "visitante": "VP Madrid",
+      "resultado": "2-3",
+      "categoria": "sp2f",
+      "ts": 1774117800000
+    },
+    {
+      "jornada": "22ª Jornada",
+      "fecha": "21/03/2026 - 19:30",
+      "local": "Extremadura Arroyo",
+      "visitante": "UCAM Torrejón",
+      "resultado": "0-3",
+      "categoria": "sp2f",
+      "ts": 1774117800000
+    },
+    {
+      "jornada": "22ª Jornada",
+      "fecha": "20/03/2026 - 20:30",
+      "local": "Grau Elite Castelló",
+      "visitante": "JS Hotels Cide Palma",
+      "resultado": "0-3",
+      "categoria": "sp2f",
+      "ts": 1774035000000
+    },
+    {
+      "jornada": "22ª Jornada",
+      "fecha": "21/03/2026 - 19:30",
+      "local": "Indescar Zaragoza",
+      "visitante": "Élite Vóley El Rosario",
+      "resultado": "0-3",
+      "categoria": "sp2f",
+      "ts": 1774117800000
+    },
+    {
+      "jornada": "22ª Jornada",
+      "fecha": "21/03/2026 - 19:30",
+      "local": "CV Sant Cugat",
+      "visitante": "CVB Barça",
+      "resultado": "0-3",
+      "categoria": "sp2f",
+      "ts": 1774117800000
+    },
+    {
+      "jornada": "22ª Jornada",
+      "fecha": "21/03/2026 - 19:30",
+      "local": "JS Hotels Cide Palma",
+      "visitante": "Vallbona Protegim",
+      "resultado": "2-3",
+      "categoria": "sp2f",
+      "ts": 1774117800000
+    },
+    {
+      "jornada": "22ª Jornada",
+      "fecha": "21/03/2026 - 18:30",
+      "local": "Emalsa Gran Canaria",
+      "visitante": "Universidad de Granada",
+      "resultado": "1-3",
+      "categoria": "sp2f",
+      "ts": 1774114200000
+    },
+    {
+      "jornada": "22ª Jornada",
+      "fecha": "21/03/2026 - 19:30",
+      "local": "CV Paterna Liceo",
+      "visitante": "Fedes Ascensores La Laguna",
+      "resultado": "2-3",
+      "categoria": "sp2f",
+      "ts": 1774117800000
+    },
+    {
+      "jornada": "22ª Jornada",
+      "fecha": "21/03/2026 - 19:30",
+      "local": "Camporrosso Finestrat Medsur",
+      "visitante": "CDV Guía",
+      "resultado": "0-3",
+      "categoria": "sp2f",
+      "ts": 1774117800000
+    }
+  ]
+}
