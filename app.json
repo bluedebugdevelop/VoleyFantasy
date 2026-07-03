@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "VoleyFantasy",
+    "slug": "voleyfantasy",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "voleyfantasy",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#080F24",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.voleyfantasy.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.voleyfantasy.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "backgroundColor": "#080F24"
+      },
+      "permissions": [
+        "INTERNET"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-asset",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": false
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "ac15741f-eb21-438d-a4bc-cc15815b19e6"
+      }
+    },
+    "owner": "adriest"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "voleyfantasy-scraper",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "scrape": "node index.js",
+    "subir": "node index.js --subir"
+  },
+  "dependencies": {
+    "cheerio": "^1.2.0",
+    "firebase-admin": "^13.0.2"
+  }
+}

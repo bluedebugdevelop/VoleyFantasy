@@ -1,0 +1,28 @@
+# Actualización diaria de datos y mercado de VoleyFantasy.
+# Requiere el secret FIREBASE_SERVICE_ACCOUNT con el contenido del
+# serviceAccountKey.json de Firebase (Configuración → Cuentas de servicio).
+name: Actualizar datos RFEVB
+
+on:
+  schedule:
+    - cron: '0 5 * * *' # todos los días a las 05:00 UTC
+  workflow_dispatch: {}
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: scraper
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-audit --no-fund
+      - name: Escribir credenciales de Firebase
+        run: echo "$FIREBASE_SERVICE_ACCOUNT" > serviceAccountKey.json
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      - name: Scrapear RFEVB y subir a Firestore
+        run: npm run subir
