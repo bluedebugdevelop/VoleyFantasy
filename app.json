@@ -7,10 +7,7 @@
     "scheme": "voleyfantasy",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
-    "splash": {
-      "backgroundColor": "#080F24",
-      "resizeMode": "contain"
-    },
+    "icon": "./assets/icon.png",
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.voleyfantasy.app",
@@ -23,16 +20,28 @@
       "package": "com.voleyfantasy.app",
       "versionCode": 1,
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#080F24"
       },
       "permissions": [
         "INTERNET"
       ]
     },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
     "plugins": [
       "expo-router",
       "expo-asset",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "backgroundColor": "#080F24",
+          "imageWidth": 220
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": false
