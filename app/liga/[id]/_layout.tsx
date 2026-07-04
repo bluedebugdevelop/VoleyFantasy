@@ -71,7 +71,7 @@ export default function LigaLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: 'Clasificación',
+            title: 'Liga',
             tabBarIcon: ({ color, focused }) => (
               <Ionicons name={focused ? 'podium' : 'podium-outline'} size={22} color={color} />
             ),
@@ -119,7 +119,7 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: colores.azulTenue,
+    backgroundColor: colores.primarioTenue,
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 7,

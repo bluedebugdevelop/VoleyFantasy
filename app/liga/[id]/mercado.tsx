@@ -1,6 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import {
-  Alert,
   FlatList,
   Modal,
   Pressable,
@@ -13,6 +12,7 @@ import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Boton from '@/components/Boton';
+import { alerta } from '@/components/Alerta';
 import CuentaAtras from '@/components/CuentaAtras';
 import TarjetaJugador from '@/components/TarjetaJugador';
 import { useJuego } from '@/store/juego';
@@ -62,12 +62,12 @@ export default function Mercado() {
     if (!seleccionado) return;
     const cantidad = Math.round(parseFloat(importe.replace(',', '.')) * 1_000_000);
     if (!Number.isFinite(cantidad) || cantidad <= 0) {
-      return Alert.alert('Importe no válido', 'Introduce la puja en millones, p. ej. 7.5');
+      return alerta({ icono: 'calculator', tono: 'aviso', titulo: 'Importe no válido', mensaje: 'Introduce la puja en millones, p. ej. 7.5' });
     }
     const error = pujar(id, seleccionado.id, cantidad);
-    if (error) return Alert.alert('No se pudo pujar', error);
+    if (error) return alerta({ icono: 'hand-left', tono: 'peligro', titulo: 'No se pudo pujar', mensaje: error });
     setSeleccionado(null);
-    Alert.alert('Puja registrada ✅', 'Si nadie la supera antes del cierre, el jugador será tuyo.');
+    alerta({ icono: 'checkmark-circle', tono: 'exito', titulo: 'Puja registrada', mensaje: 'Si nadie la supera antes del cierre, el jugador será tuyo.' });
   };
 
   return (

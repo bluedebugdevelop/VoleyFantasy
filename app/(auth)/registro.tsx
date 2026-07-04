@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -13,6 +12,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Boton from '@/components/Boton';
+import { alerta } from '@/components/Alerta';
 import FondoDegradado from '@/components/FondoDegradado';
 import { registrarConEmail } from '@/services/auth';
 import { useJuego } from '@/store/juego';
@@ -28,7 +28,7 @@ export default function Registro() {
 
   const registrar = async () => {
     if (!nombre || !email || contrasena.length < 6) {
-      return Alert.alert('Revisa los datos', 'La contraseña debe tener al menos 6 caracteres.');
+      return alerta({ icono: 'alert-circle', tono: 'aviso', titulo: 'Revisa los datos', mensaje: 'La contraseña debe tener al menos 6 caracteres.' });
     }
     setCargando(true);
     try {
@@ -40,7 +40,7 @@ export default function Registro() {
         e?.code === 'auth/email-already-in-use'
           ? 'Ya existe una cuenta con ese email'
           : 'No se pudo crear la cuenta, inténtalo de nuevo';
-      Alert.alert('Error', msg);
+      alerta({ icono: 'close-circle', tono: 'peligro', titulo: 'No se pudo crear la cuenta', mensaje: msg });
     } finally {
       setCargando(false);
     }

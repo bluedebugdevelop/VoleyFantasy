@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -15,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import Boton from '@/components/Boton';
+import { alerta } from '@/components/Alerta';
 import Logo from '@/components/Logo';
 import FondoDegradado from '@/components/FondoDegradado';
 import { entrarConEmail, entrarConGoogle, firebaseConfigurado } from '@/services/auth';
@@ -46,19 +46,19 @@ export default function Login() {
           await establecerUsuario(u);
           router.replace('/(tabs)');
         })
-        .catch((e) => Alert.alert('Error con Google', String(e?.message ?? e)));
+        .catch((e) => alerta({ icono: 'logo-google', tono: 'peligro', titulo: 'Error con Google', mensaje: String(e?.message ?? e) }));
     }
   }, [response]);
 
   const entrar = async () => {
-    if (!email || !contrasena) return Alert.alert('Faltan datos', 'Introduce email y contraseña');
+    if (!email || !contrasena) return alerta({ icono: 'alert-circle', tono: 'aviso', titulo: 'Faltan datos', mensaje: 'Introduce email y contraseña' });
     setCargando(true);
     try {
       const u = await entrarConEmail(email.trim(), contrasena);
       await establecerUsuario(u);
       router.replace('/(tabs)');
     } catch (e: any) {
-      Alert.alert('No se pudo iniciar sesión', traducirError(e?.code));
+      alerta({ icono: 'lock-closed', tono: 'peligro', titulo: 'No se pudo iniciar sesión', mensaje: traducirError(e?.code) });
     } finally {
       setCargando(false);
     }
@@ -123,7 +123,7 @@ export default function Login() {
               <>
                 <Text style={estilos.titulo}>Modo demo</Text>
                 <Text style={estilos.subtitulo}>
-                  Firebase aún no está configurado. Juega con datos reales de la RFEVB guardados en tu dispositivo.
+                  Firebase aún no está configurado. Juega con datos reales guardados en tu dispositivo.
                 </Text>
                 <Boton titulo="Empezar a jugar" onPress={entrarDemo} variante="primario" estilo={{ marginTop: 8 }} />
               </>

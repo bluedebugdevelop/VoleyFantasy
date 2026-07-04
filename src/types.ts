@@ -110,6 +110,8 @@ export interface MiembroLiga {
   uid: string;
   nombre: string;
   puntos: number;
+  /** Valor de mercado total de su plantilla en esta liga. */
+  valorEquipo?: number;
 }
 
 /** Puja de un usuario por un jugador del mercado del ciclo actual. */

@@ -3,7 +3,7 @@ import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useJuego } from '@/store/juego';
-import { colores, espaciado, radios, tipografia } from '@/theme';
+import { colores, espaciado, formatearValor, radios, tipografia } from '@/theme';
 
 const COLORES_PODIO = ['#F59E0B', '#94A3B8', '#B45309'];
 
@@ -44,9 +44,17 @@ export default function Clasificacion() {
             <View style={estilos.inicial}>
               <Text style={estilos.inicialTexto}>{item.nombre.charAt(0).toUpperCase()}</Text>
             </View>
-            <Text style={[estilos.nombre, soyYo && { color: colores.primario }]} numberOfLines={1}>
-              {item.nombre}{soyYo ? ' (tú)' : ''}
-            </Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[estilos.nombre, soyYo && { color: colores.primario }]} numberOfLines={1}>
+                {item.nombre}{soyYo ? ' (tú)' : ''}
+              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                <Ionicons name="briefcase-outline" size={11} color={colores.textoMuted} />
+                <Text style={estilos.valorEquipo}>
+                  {item.valorEquipo ? formatearValor(item.valorEquipo) : 'Equipo sin valorar'}
+                </Text>
+              </View>
+            </View>
             <View style={estilos.puntosChip}>
               <Text style={estilos.puntos}>{item.puntos}</Text>
               <Text style={estilos.puntosEtiqueta}>pts</Text>
@@ -92,7 +100,8 @@ const estilos = StyleSheet.create({
     justifyContent: 'center',
   },
   inicialTexto: { fontFamily: tipografia.bold, color: colores.texto, fontSize: 15 },
-  nombre: { flex: 1, fontSize: 15, fontFamily: tipografia.bold, color: colores.texto },
+  nombre: { fontSize: 15, fontFamily: tipografia.bold, color: colores.texto },
+  valorEquipo: { fontSize: 11, fontFamily: tipografia.medium, color: colores.textoMuted },
   puntosChip: {
     flexDirection: 'row',
     alignItems: 'baseline',

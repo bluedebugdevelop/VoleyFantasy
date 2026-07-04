@@ -14,11 +14,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const assets = join(__dirname, '..', 'assets');
 mkdirSync(assets, { recursive: true });
 
-const NAVY = [14, 42, 107];
-const NAVY_D = [8, 15, 36];
+const NAVY = [1, 0, 0];
+const NAVY_D = [28, 26, 34];
 const WHITE = [245, 247, 251];
-const RED = [225, 29, 60];
-const GOLD = [255, 196, 0];
+const RED = [226, 29, 102];
+const GOLD = [255, 77, 143];
 
 function crc32(buf) {
   let c = ~0;

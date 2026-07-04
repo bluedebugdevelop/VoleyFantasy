@@ -19,9 +19,9 @@ export default function Logo({ tamano = 72, conTexto = true }: { tamano?: number
       {conTexto && (
         <View style={{ alignItems: 'center' }}>
           <Text style={estilos.wordmark}>
-            Voley<Text style={{ color: colores.primario }}>Fantasy</Text>
+            La <Text style={{ color: colores.primario }}>SuperFantasy</Text>
           </Text>
-          <Text style={estilos.claim}>SUPERLIGA · RFEVB</Text>
+          <Text style={estilos.claim}>FANTASY DE VOLEIBOL</Text>
         </View>
       )}
     </View>

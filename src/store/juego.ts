@@ -357,12 +357,15 @@ export const useJuego = create<EstadoJuego>()(
   ),
 );
 
-/** Sincroniza equipos y puntos con Firestore sin bloquear la UI. */
+/** Sincroniza equipos, puntos y valor con Firestore sin bloquear la UI. */
 function sincronizarRemoto(s: EstadoJuego): void {
   const u = s.usuario;
   if (!u || u.demo || !firebaseConfigurado) return;
   guardarEstadoUsuario(u.uid, { equiposLiga: s.equiposLiga, nombre: u.nombre }).catch(() => {});
-  actualizarPuntosEnLigas(u.uid, s.ligas, (ligaId) => s.puntosTotales(ligaId)).catch(() => {});
+  actualizarPuntosEnLigas(u.uid, s.ligas, (ligaId) => ({
+    puntos: s.puntosTotales(ligaId),
+    valorEquipo: s.valorEquipo(ligaId),
+  })).catch(() => {});
 }
 
 export { nombreModalidad };

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "VoleyFantasy",
+    "name": "La SuperFantasy",
     "slug": "voleyfantasy",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -21,7 +21,7 @@
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#080F24"
+        "backgroundColor": "#010000"
       },
       "permissions": [
         "INTERNET"
@@ -38,7 +38,7 @@
         "expo-splash-screen",
         {
           "image": "./assets/splash.png",
-          "backgroundColor": "#080F24",
+          "backgroundColor": "#010000",
           "imageWidth": 220
         }
       ]

@@ -122,17 +122,17 @@ export async function guardarVentas(ligaId: string, ventas: Venta[]): Promise<vo
   await updateDoc(doc(db, 'ligas', ligaId), { ventas });
 }
 
-/** Actualiza los puntos del usuario en sus ligas (los de cada equipo de liga). */
+/** Actualiza puntos y valor de equipo del usuario en sus ligas. */
 export async function actualizarPuntosEnLigas(
   uid: string,
   ligas: Liga[],
-  puntosDe: (ligaId: string) => number,
+  datosDe: (ligaId: string) => { puntos: number; valorEquipo: number },
 ): Promise<void> {
   if (!db) return;
   await Promise.all(
     ligas.map(async (l) => {
-      const puntos = puntosDe(l.id);
-      const miembros = l.miembros.map((m) => (m.uid === uid ? { ...m, puntos } : m));
+      const datos = datosDe(l.id);
+      const miembros = l.miembros.map((m) => (m.uid === uid ? { ...m, ...datos } : m));
       await updateDoc(doc(db!, 'ligas', l.id), { miembros }).catch(() => {});
     }),
   );

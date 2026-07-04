@@ -20,7 +20,7 @@ export default function Invitar() {
 
   const enlace = `voleyfantasy://unirse/${liga.codigo}`;
   const mensaje =
-    `🏐 ¡Únete a mi liga "${liga.nombre}" en VoleyFantasy!\n\n` +
+    `🏐 ¡Únete a mi liga "${liga.nombre}" en La SuperFantasy!\n\n` +
     `Competición: ${nombreModalidad(liga.modalidad)}\n` +
     `Código de invitación: ${liga.codigo}\n\n` +
     `Ábrelo en la app o entra con el enlace: ${enlace}`;

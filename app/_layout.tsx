@@ -11,6 +11,7 @@ import {
   Inter_800ExtraBold,
   useFonts,
 } from '@expo-google-fonts/inter';
+import AlertaGlobal from '@/components/Alerta';
 import { useJuego } from '@/store/juego';
 import { observarSesion } from '@/services/auth';
 import { colores } from '@/theme';
@@ -59,11 +60,15 @@ export default function RootLayout() {
         <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)/registro" options={{ headerShown: false }} />
         <Stack.Screen name="home" options={{ headerShown: false }} />
+        <Stack.Screen name="crear-liga" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="unirse-liga" options={{ headerShown: false, animation: 'slide_from_right' }} />
         <Stack.Screen name="liga/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="bienvenida/[id]" options={{ headerShown: false, animation: 'fade' }} />
         <Stack.Screen name="unirse/[codigo]" options={{ headerShown: false }} />
         <Stack.Screen name="jugador/[id]" options={{ title: 'Jugador' }} />
+        <Stack.Screen name="[...desconocida]" options={{ headerShown: false }} />
       </Stack>
+      <AlertaGlobal />
     </>
   );
 }
