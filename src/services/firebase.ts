@@ -28,10 +28,11 @@ const firebaseConfig = {
  */
 export const GOOGLE_OAUTH = {
   webClientId: '977874442271-44ea8lqpvo76splgb6g92ftbs436co0b.apps.googleusercontent.com',
-  // Rellénalos solo cuando compiles con EAS un build nativo de iOS/Android
-  // (Google Cloud → Credenciales → crear cliente OAuth iOS/Android).
+  // Cliente Android: paquete com.voleyfantasy.app + SHA-1 del keystore de EAS.
+  androidClientId: '977874442271-ija4civsk7lduj7ovise9n118br2gt6h.apps.googleusercontent.com',
+  // Rellénalo solo si compilas también para iOS (Google Cloud → Credenciales →
+  // crear cliente OAuth iOS con el bundle identifier).
   iosClientId: 'REEMPLAZAR.apps.googleusercontent.com',
-  androidClientId: 'REEMPLAZAR.apps.googleusercontent.com',
 };
 
 export const firebaseConfigurado = !firebaseConfig.apiKey.startsWith('REEMPLAZAR');
