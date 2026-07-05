@@ -13,17 +13,19 @@ import { colores, degradados, espaciado, radios, sombraSuave, tipografia } from 
 export default function Invitar() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const liga = useJuego((s) => s.liga)(id);
+  const liga = useJuego((s) => s.ligas.find((l) => l.id === id));
   const [copiado, setCopiado] = useState(false);
 
   if (!liga?.codigo) return null;
 
-  const enlace = `voleyfantasy://unirse/${liga.codigo}`;
+  // Enlace https (clicable en WhatsApp): página puente en GitHub Pages que
+  // redirige al esquema nativo voleyfantasy://unirse/CODIGO
+  const enlace = `https://bluedebugdevelop.github.io/VoleyFantasy/unirse.html?c=${liga.codigo}`;
   const mensaje =
     `🏐 ¡Únete a mi liga "${liga.nombre}" en La SuperFantasy!\n\n` +
     `Competición: ${nombreModalidad(liga.modalidad)}\n` +
     `Código de invitación: ${liga.codigo}\n\n` +
-    `Ábrelo en la app o entra con el enlace: ${enlace}`;
+    `Entra aquí: ${enlace}`;
 
   const copiar = async () => {
     await Clipboard.setStringAsync(liga.codigo!);

@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Tabs, useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useJuego } from '@/store/juego';
 import { nombreModalidad } from '@/types';
 import { colores, espaciado, tipografia } from '@/theme';
@@ -11,7 +11,8 @@ import { colores, espaciado, tipografia } from '@/theme';
 export default function LigaLayout() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const liga = useJuego((s) => s.liga)(id);
+  const insets = useSafeAreaInsets();
+  const liga = useJuego((s) => s.ligas.find((l) => l.id === id));
   const asegurarEquipo = useJuego((s) => s.asegurarEquipo);
   const sincronizarMercado = useJuego((s) => s.sincronizarMercado);
 
@@ -60,9 +61,9 @@ export default function LigaLayout() {
             backgroundColor: colores.fondoAlt,
             borderTopColor: colores.borde,
             borderTopWidth: 1,
-            height: Platform.OS === 'ios' ? 84 : 62,
+            height: 58 + insets.bottom,
             paddingTop: 6,
-            paddingBottom: Platform.OS === 'ios' ? 26 : 8,
+            paddingBottom: insets.bottom + 6,
           },
           tabBarLabelStyle: { fontFamily: tipografia.semibold, fontSize: 11 },
           sceneStyle: { backgroundColor: colores.fondo },
@@ -93,6 +94,21 @@ export default function LigaLayout() {
             tabBarIcon: ({ color, focused }) => (
               <Ionicons name={focused ? 'trending-up' : 'trending-up-outline'} size={22} color={color} />
             ),
+          }}
+        />
+        <Tabs.Screen
+          name="inicio"
+          options={{
+            title: 'Inicio',
+            tabBarIcon: ({ color, focused }) => (
+              <Ionicons name={focused ? 'home' : 'home-outline'} size={22} color={color} />
+            ),
+          }}
+          listeners={{
+            tabPress: (e) => {
+              e.preventDefault();
+              router.replace('/home');
+            },
           }}
         />
         <Tabs.Screen name="invitar" options={{ href: null }} />

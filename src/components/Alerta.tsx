@@ -161,7 +161,7 @@ const estilos = StyleSheet.create({
   botones: { flexDirection: 'row', gap: espaciado.s, marginTop: espaciado.m, width: '100%' },
   boton: {
     flex: 1,
-    borderRadius: radios.m,
+    borderRadius: radios.s,
     paddingVertical: 13,
     alignItems: 'center',
   },

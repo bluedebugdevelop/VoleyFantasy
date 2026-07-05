@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>La SuperFantasy — Únete a la liga</title>
+  <meta property="og:title" content="La SuperFantasy 🏐" />
+  <meta property="og:description" content="Te han invitado a una liga fantasy de voleibol. ¡Únete!" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #010000;
+      color: #fff;
+      font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+    .caja { max-width: 380px; width: 100%; }
+    .balon {
+      width: 96px; height: 96px; margin: 0 auto 20px;
+      border-radius: 50%;
+      background: #e21d66;
+      position: relative;
+      box-shadow: 0 8px 40px rgba(226, 29, 102, 0.45);
+    }
+    h1 { font-size: 26px; font-weight: 800; margin-bottom: 8px; }
+    h1 span { color: #e21d66; }
+    p { color: #b0b0b0; font-size: 14px; line-height: 1.5; margin-bottom: 22px; }
+    .codigo {
+      background: #241f2b;
+      border: 1.5px dashed #e21d66;
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: 8px;
+      margin-bottom: 22px;
+      user-select: all;
+    }
+    a.boton {
+      display: block;
+      background: #e21d66;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 16px;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .nota { font-size: 12px; color: #808080; }
+  </style>
+</head>
+<body>
+  <div class="caja">
+    <div class="balon"></div>
+    <h1>La <span>SuperFantasy</span></h1>
+    <p>Te han invitado a una liga fantasy de voleibol.<br />Tu código de invitación:</p>
+    <div class="codigo" id="codigo">——————</div>
+    <a class="boton" id="abrir" href="#">Abrir en la app</a>
+    <p class="nota">
+      Si no tienes la app instalada, pídele el APK a quien te invitó.<br />
+      Dentro de la app: <b>Unirse</b> → introduce el código.
+    </p>
+  </div>
+  <script>
+    var codigo = (new URLSearchParams(location.search).get('c') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+    if (codigo) {
+      document.getElementById('codigo').textContent = codigo;
+      var scheme = 'voleyfantasy://unirse/' + codigo;
+      var intent = 'intent://unirse/' + codigo + '#Intent;scheme=voleyfantasy;package=com.voleyfantasy.app;end';
+      var esAndroid = /android/i.test(navigator.userAgent);
+      var enlace = esAndroid ? intent : scheme;
+      document.getElementById('abrir').setAttribute('href', enlace);
+      // Intento automático de abrir la app (requiere gesto en algunos navegadores)
+      setTimeout(function () { location.href = enlace; }, 600);
+    }
+  </script>
+</body>
+</html>

@@ -19,8 +19,8 @@ export default function Bienvenida() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const jugadores = useJuego((s) => s.jugadores);
-  const equipo = useJuego((s) => s.equipoDe)(id);
-  const liga = useJuego((s) => s.liga)(id);
+  const equipo = useJuego((s) => s.equiposLiga[id]);
+  const liga = useJuego((s) => s.ligas.find((l) => l.id === id));
   const marcarBienvenidaVista = useJuego((s) => s.marcarBienvenidaVista);
   const [reveladas, setReveladas] = useState(0);
 

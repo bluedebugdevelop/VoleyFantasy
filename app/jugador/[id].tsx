@@ -12,7 +12,7 @@ import { variacionDiaria } from '@/logic/market';
 
 export default function DetalleJugador() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const jugador = useJuego((s) => s.jugador)(id);
+  const jugador = useJuego((s) => s.jugadores.find((j) => j.id === id));
 
   if (!jugador) {
     return (

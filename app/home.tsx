@@ -6,11 +6,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Boton from '@/components/Boton';
 import FondoDegradado from '@/components/FondoDegradado';
-import CuentaAtras from '@/components/CuentaAtras';
 import { confirmar } from '@/components/Alerta';
 import { useJuego } from '@/store/juego';
 import { cerrarSesionFirebase } from '@/services/auth';
-import { expiraCiclo } from '@/logic/mercadoLiga';
 import { categoriasDeModalidad, Liga, Modalidad, MODALIDADES, nombreModalidad, Partido } from '@/types';
 import { colores, espaciado, radios, sombraSuave, tipografia } from '@/theme';
 
@@ -162,9 +160,10 @@ function TarjetaLiga({ liga, indice, onPress }: { liga: Liga; indice: number; on
           <View style={{ flexDirection: 'row', gap: 8, marginTop: 10, alignItems: 'center' }}>
             <View style={estilos.ligaChip}>
               <Ionicons name="people" size={12} color={colores.textoSuave} />
-              <Text style={estilos.ligaChipTexto}>{liga.miembros.length}</Text>
+              <Text style={estilos.ligaChipTexto}>
+                {liga.miembros.length} participante{liga.miembros.length === 1 ? '' : 's'}
+              </Text>
             </View>
-            <CuentaAtras hasta={expiraCiclo(liga)} />
           </View>
         </View>
         <View style={estilos.ligaPuesto}>

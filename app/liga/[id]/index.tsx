@@ -9,7 +9,7 @@ const COLORES_PODIO = ['#F59E0B', '#94A3B8', '#B45309'];
 
 export default function Clasificacion() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const liga = useJuego((s) => s.liga)(id);
+  const liga = useJuego((s) => s.ligas.find((l) => l.id === id));
   const usuario = useJuego((s) => s.usuario);
   const refrescarLiga = useJuego((s) => s.refrescarLiga);
 

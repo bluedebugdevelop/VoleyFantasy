@@ -1,7 +1,9 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   FlatList,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -30,8 +32,8 @@ export default function Mercado() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const usuario = useJuego((s) => s.usuario);
   const jugadores = useJuego((s) => s.jugadores);
-  const liga = useJuego((s) => s.liga)(id);
-  const equipo = useJuego((s) => s.equipoDe)(id);
+  const liga = useJuego((s) => s.ligas.find((l) => l.id === id));
+  const equipo = useJuego((s) => s.equiposLiga[id]);
   const pujar = useJuego((s) => s.pujar);
   const sincronizarMercado = useJuego((s) => s.sincronizarMercado);
   const [seleccionado, setSeleccionado] = useState<Jugador | null>(null);
@@ -102,18 +104,21 @@ export default function Mercado() {
             <TarjetaJugador
               jugador={item}
               extra={
-                mejor ? (
-                  <View style={[estilos.pujaInfo, { backgroundColor: esMia ? colores.verdeTenue : colores.oroTenue }]}>
-                    <Ionicons
-                      name={esMia ? 'checkmark-circle' : 'flame'}
-                      size={11}
-                      color={esMia ? colores.verde : colores.oro}
-                    />
-                    <Text style={[estilos.pujaInfoTexto, { color: esMia ? colores.verde : colores.oro }]}>
-                      {esMia ? 'Vas ganando' : 'Puja más alta'}: {formatearValor(mejor.cantidad)}
-                    </Text>
-                  </View>
-                ) : undefined
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 5, marginTop: 5, alignItems: 'center' }}>
+                  <CuentaAtras hasta={expira} />
+                  {mejor && (
+                    <View style={[estilos.pujaInfo, { backgroundColor: esMia ? colores.verdeTenue : colores.oroTenue }]}>
+                      <Ionicons
+                        name={esMia ? 'checkmark-circle' : 'flame'}
+                        size={11}
+                        color={esMia ? colores.verde : colores.oro}
+                      />
+                      <Text style={[estilos.pujaInfoTexto, { color: esMia ? colores.verde : colores.oro }]}>
+                        {esMia ? 'Vas ganando' : 'Puja más alta'}: {formatearValor(mejor.cantidad)}
+                      </Text>
+                    </View>
+                  )}
+                </View>
               }
               accion={
                 yaEsMio ? (
@@ -135,6 +140,7 @@ export default function Mercado() {
 
       {/* Modal de puja */}
       <Modal visible={!!seleccionado} transparent animationType="fade" onRequestClose={() => setSeleccionado(null)}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <Pressable style={estilos.fondoModal} onPress={() => setSeleccionado(null)}>
           <Pressable style={estilos.modal} onPress={(e) => e.stopPropagation()}>
             {seleccionado && (
@@ -168,6 +174,7 @@ export default function Mercado() {
             )}
           </Pressable>
         </Pressable>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
@@ -204,8 +211,6 @@ const estilos = StyleSheet.create({
     borderRadius: radios.pill,
     paddingHorizontal: 8,
     paddingVertical: 2,
-    marginTop: 5,
-    alignSelf: 'flex-start',
   },
   pujaInfoTexto: { fontSize: 10, fontFamily: tipografia.bold },
   pujarBtn: {
@@ -213,7 +218,7 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     gap: 5,
     backgroundColor: colores.primario,
-    borderRadius: radios.pill,
+    borderRadius: radios.s,
     paddingHorizontal: 12,
     paddingVertical: 5,
     marginTop: 2,

@@ -31,7 +31,7 @@ type Vista = 'equipo' | 'plantilla';
 export default function Equipo() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const jugadores = useJuego((s) => s.jugadores);
-  const equipo = useJuego((s) => s.equipoDe)(id);
+  const equipo = useJuego((s) => s.equiposLiga[id]);
   const alinear = useJuego((s) => s.alinear);
   const vender = useJuego((s) => s.vender);
   const puntosJornada = useJuego((s) => s.puntosJornada);
@@ -93,6 +93,8 @@ export default function Equipo() {
         <ScrollView contentContainerStyle={estilos.contenido} showsVerticalScrollIndicator={false}>
           {/* Pista estilo retransmisión */}
           <View style={[estilos.pista, sombraSuave]}>
+            {/* Grada oscura tras la red */}
+            <View style={estilos.grada} />
             {/* Red superior con malla */}
             <View style={estilos.redBanda} />
             <View style={estilos.redMalla}>
@@ -118,6 +120,10 @@ export default function Equipo() {
                 <Ficha ligaId={id} etiqueta="R2" onPress={() => setHuecoAbierto('R2')} />
               </View>
             </LinearGradient>
+
+            {/* Líneas laterales */}
+            <View style={[estilos.lineaLateral, { left: 8 }]} />
+            <View style={[estilos.lineaLateral, { right: 8 }]} />
           </View>
 
           {/* Líbero + Entrenador bajo la pista */}
@@ -250,8 +256,9 @@ function Ficha({
   oscuro?: boolean;
   onPress: () => void;
 }) {
-  const equipo = useJuego((s) => s.equipoDe)(ligaId);
-  const jugador = useJuego((s) => s.jugador);
+  const equipo = useJuego((s) => s.equiposLiga[ligaId]);
+  const jugadores = useJuego((s) => s.jugadores);
+  const jugador = (jid: string) => jugadores.find((j) => j.id === jid);
   const h = HUECOS_ALINEACION.find((x) => x.etiqueta === etiqueta)!;
   const j = equipo?.alineacion[etiqueta] ? jugador(equipo.alineacion[etiqueta]!) : undefined;
   const color = COLOR_POSICION[h.posicion];
@@ -328,7 +335,15 @@ const estilos = StyleSheet.create({
     borderWidth: 1,
     borderColor: colores.borde,
   },
-  redBanda: { height: 10, backgroundColor: '#f4f4f5' },
+  grada: { height: 26, backgroundColor: '#17141d' },
+  redBanda: { height: 8, backgroundColor: '#f4f4f5' },
+  lineaLateral: {
+    position: 'absolute',
+    top: 76,
+    bottom: 10,
+    width: 2,
+    backgroundColor: 'rgba(255,255,255,0.75)',
+  },
   redMalla: {
     height: 44,
     backgroundColor: '#e9b7ab',
@@ -418,7 +433,7 @@ const estilos = StyleSheet.create({
   },
   limiteTexto: { fontSize: 12, fontFamily: tipografia.semibold, color: colores.textoSuave },
   etiquetaTitular: { fontSize: 10, fontFamily: tipografia.bold, color: colores.verde, marginTop: 3 },
-  venderBtn: { backgroundColor: colores.rojoTenue, borderRadius: radios.pill, paddingHorizontal: 12, paddingVertical: 4, marginTop: 2 },
+  venderBtn: { backgroundColor: colores.rojoTenue, borderRadius: radios.s, paddingHorizontal: 12, paddingVertical: 4, marginTop: 2 },
   venderTexto: { color: colores.rojo, fontFamily: tipografia.bold, fontSize: 12 },
   vacio: { color: colores.textoTenue, textAlign: 'center', fontFamily: tipografia.regular, lineHeight: 20, fontSize: 13, padding: espaciado.l },
   fondoModal: { flex: 1, backgroundColor: colores.overlay, justifyContent: 'flex-end' },
