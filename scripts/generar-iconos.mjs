@@ -1,7 +1,14 @@
 /**
- * Genera los assets de la app (icono, splash, adaptive icon y favicon) sin
- * dependencias externas: dibuja un balón de voleibol estilizado con los
- * colores de la RFEVB y escribe PNGs válidos (RGBA, color type 6).
+ * Genera los assets de La SuperFantasy — logo minimalista de dos tonos
+ * (negro + rosa de marca) listo para App Store y Play Store.
+ *
+ * Diseño: balón de voleibol en rosa sólido con las costuras en negativo
+ * (negro), sin degradados ni terceros colores. Salidas:
+ *   - icon.png          1024² opaco (iOS/tiendas, sin transparencia)
+ *   - adaptive-icon.png 1024² transparente, balón dentro de la zona de
+ *                       seguridad del icono adaptativo de Android (~66%)
+ *   - splash.png        1024² opaco, balón centrado más pequeño
+ *   - favicon.png       196² opaco (web)
  *
  * Uso: node scripts/generar-iconos.mjs
  */
@@ -14,11 +21,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const assets = join(__dirname, '..', 'assets');
 mkdirSync(assets, { recursive: true });
 
-const NAVY = [1, 0, 0];
-const NAVY_D = [28, 26, 34];
-const WHITE = [245, 247, 251];
-const RED = [226, 29, 102];
-const GOLD = [255, 77, 143];
+const NEGRO = [1, 0, 0]; // #010000, fondo de marca
+const ROSA = [226, 29, 102]; // #e21d66
 
 function crc32(buf) {
   let c = ~0;
@@ -58,52 +62,72 @@ function png(width, height, rgba) {
   ]);
 }
 
-const mix = (a, b, t) => [
-  Math.round(a[0] + (b[0] - a[0]) * t),
-  Math.round(a[1] + (b[1] - a[1]) * t),
-  Math.round(a[2] + (b[2] - a[2]) * t),
-];
+/** Antialiasing: cobertura suave de un borde (distancia con signo → alfa 0..1). */
+function cobertura(distancia, radio) {
+  return Math.min(1, Math.max(0, radio - distancia + 0.5));
+}
 
 /**
- * Dibuja el icono. `bg` = color de fondo o null para transparente.
- * `escalaBalon` controla el tamaño del balón respecto al lienzo.
+ * Dibuja el balón minimalista. `bg` = color de fondo o null (transparente).
+ * `escalaBalon` = diámetro del balón respecto al lienzo.
  */
-function dibujar(size, bg, escalaBalon = 0.62) {
+function dibujar(size, bg, escalaBalon) {
   const buf = Buffer.alloc(size * size * 4);
   const cx = size / 2;
   const cy = size / 2;
   const R = (size * escalaBalon) / 2;
-  // Costuras: tres circunferencias cuyos arcos cruzan el balón
+
+  // Tres costuras: arcos de circunferencias descentradas (patrón de voleibol)
   const seams = [
-    { x: cx - R * 1.15, y: cy - R * 1.15, r: R * 1.55 },
-    { x: cx + R * 1.35, y: cy - R * 0.55, r: R * 1.5 },
-    { x: cx, y: cy + R * 1.7, r: R * 1.6 },
+    { x: cx - R * 1.1, y: cy - R * 1.15, r: R * 1.5 },
+    { x: cx + R * 1.35, y: cy - R * 0.5, r: R * 1.5 },
+    { x: cx, y: cy + R * 1.75, r: R * 1.6 },
   ];
-  const grosor = R * 0.06;
+  const grosor = R * 0.055;
+
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       const i = (y * size + x) * 4;
-      let col = bg ? bg.slice() : null;
+      const d = Math.hypot(x + 0.5 - cx, y + 0.5 - cy);
+
+      // Fondo base
+      let col = bg;
       let alpha = bg ? 255 : 0;
-      const d = Math.hypot(x - cx, y - cy);
-      if (bg) {
-        // Degradado radial suave en el fondo
-        const t = Math.min(1, d / (size * 0.75));
-        col = mix(bg, NAVY_D, t * 0.6);
-      }
-      if (d <= R) {
-        // Interior del balón: blanco con leve sombreado
-        const sh = Math.min(1, d / R);
-        col = mix(WHITE, [210, 216, 228], sh * 0.5);
-        alpha = 255;
-        // Costuras rojas
+
+      // Cobertura del disco (balón)
+      const aBall = cobertura(d, R);
+      if (aBall > 0) {
+        // Costuras en negativo (color del fondo, o transparente si no hay fondo)
+        let aSeam = 0;
         for (const s of seams) {
-          const ds = Math.abs(Math.hypot(x - s.x, y - s.y) - s.r);
-          if (ds < grosor) col = RED;
+          const ds = Math.abs(Math.hypot(x + 0.5 - s.x, y + 0.5 - s.y) - s.r);
+          aSeam = Math.max(aSeam, cobertura(ds, grosor));
         }
-        // Borde dorado del balón
-        if (R - d < grosor * 1.2) col = GOLD;
+        // Color del balón: rosa, menos donde hay costura (→ fondo/transparente)
+        const rosaCobertura = aBall * (1 - aSeam);
+        const fondoCol = bg ?? [0, 0, 0];
+        const fondoAlpha = bg ? 255 : 0;
+        // Mezcla: rosa sobre (fondo/seam)
+        const base = col ?? [0, 0, 0];
+        const baseA = alpha;
+        // resultado = rosa*rosaCobertura + fondo*(resto dentro del disco) + base*(fuera)
+        const dentro = aBall; // 0..1
+        const seamCol = fondoCol;
+        const seamA = fondoAlpha;
+        // Primero el interior del disco = rosa donde no hay costura, fondo donde sí
+        const rInt = ROSA[0] * (1 - aSeam) + seamCol[0] * aSeam;
+        const gInt = ROSA[1] * (1 - aSeam) + seamCol[1] * aSeam;
+        const bInt = ROSA[2] * (1 - aSeam) + seamCol[2] * aSeam;
+        const aInt = 255 * (1 - aSeam) + seamA * aSeam;
+        // Componer interior sobre el exterior según cobertura del disco
+        col = [
+          Math.round(rInt * dentro + base[0] * (1 - dentro)),
+          Math.round(gInt * dentro + base[1] * (1 - dentro)),
+          Math.round(bInt * dentro + base[2] * (1 - dentro)),
+        ];
+        alpha = Math.round(aInt * dentro + baseA * (1 - dentro));
       }
+
       buf[i] = col ? col[0] : 0;
       buf[i + 1] = col ? col[1] : 0;
       buf[i + 2] = col ? col[2] : 0;
@@ -113,8 +137,14 @@ function dibujar(size, bg, escalaBalon = 0.62) {
   return png(size, size, buf);
 }
 
-writeFileSync(join(assets, 'icon.png'), dibujar(1024, NAVY, 0.62));
-writeFileSync(join(assets, 'adaptive-icon.png'), dibujar(1024, null, 0.7)); // primer plano transparente
-writeFileSync(join(assets, 'splash.png'), dibujar(1024, NAVY, 0.5));
-writeFileSync(join(assets, 'favicon.png'), dibujar(196, NAVY, 0.66));
-console.log('Assets generados en', assets);
+writeFileSync(join(assets, 'icon.png'), dibujar(1024, NEGRO, 0.66));
+writeFileSync(join(assets, 'adaptive-icon.png'), dibujar(1024, null, 0.56)); // zona segura Android
+writeFileSync(join(assets, 'splash.png'), dibujar(1024, NEGRO, 0.42));
+writeFileSync(join(assets, 'favicon.png'), dibujar(196, NEGRO, 0.7));
+
+// Icono 512² para la ficha de Google Play Store (Play Console → Icono de la app)
+const tiendas = join(__dirname, '..', 'store');
+mkdirSync(tiendas, { recursive: true });
+writeFileSync(join(tiendas, 'play-store-icon-512.png'), dibujar(512, NEGRO, 0.66));
+console.log('Assets minimalistas generados en', assets);
+console.log('Icono de tienda (512) en', tiendas);
