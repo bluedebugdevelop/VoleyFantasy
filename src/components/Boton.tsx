@@ -72,8 +72,8 @@ export default function Boton({
 }
 
 const estilos = StyleSheet.create({
-  base: { borderRadius: radios.s, overflow: 'hidden' },
-  gradiente: { borderRadius: radios.s },
+  base: { borderRadius: radios.boton, overflow: 'hidden' },
+  gradiente: { borderRadius: radios.boton },
   contenido: {
     flexDirection: 'row',
     gap: 8,

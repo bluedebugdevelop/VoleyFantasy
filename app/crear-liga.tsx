@@ -12,7 +12,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Boton from '@/components/Boton';
 import FondoDegradado from '@/components/FondoDegradado';
 import { alerta, confirmar } from '@/components/Alerta';
@@ -75,6 +75,7 @@ const OPCIONES: OpcionModalidad[] = [
 
 export default function CrearLiga() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const crearLiga = useJuego((s) => s.crearLiga);
   const asegurarEquipo = useJuego((s) => s.asegurarEquipo);
   const [nombre, setNombre] = useState('');
@@ -160,7 +161,7 @@ export default function CrearLiga() {
             })}
           </ScrollView>
 
-          <View style={estilos.pie}>
+          <View style={[estilos.pie, { paddingBottom: insets.bottom + espaciado.m }]}>
             <Boton
               titulo="Crear mi liga"
               onPress={crear}

@@ -12,6 +12,7 @@ import {
   useFonts,
 } from '@expo-google-fonts/inter';
 import AlertaGlobal from '@/components/Alerta';
+import MenuLateral from '@/components/MenuLateral';
 import { useJuego } from '@/store/juego';
 import { observarSesion } from '@/services/auth';
 import { colores } from '@/theme';
@@ -66,9 +67,14 @@ export default function RootLayout() {
         <Stack.Screen name="bienvenida/[id]" options={{ headerShown: false, animation: 'fade' }} />
         <Stack.Screen name="unirse/[codigo]" options={{ headerShown: false }} />
         <Stack.Screen name="jugador/[id]" options={{ title: 'Jugador' }} />
+        <Stack.Screen name="perfil" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="jugadores" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="reglas" options={{ headerShown: false, animation: 'slide_from_right' }} />
+        <Stack.Screen name="aviso-legal" options={{ headerShown: false, animation: 'slide_from_right' }} />
         <Stack.Screen name="[...desconocida]" options={{ headerShown: false }} />
       </Stack>
       <AlertaGlobal />
+      <MenuLateral />
     </>
   );
 }

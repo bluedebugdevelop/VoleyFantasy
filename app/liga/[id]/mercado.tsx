@@ -17,6 +17,7 @@ import Boton from '@/components/Boton';
 import { alerta } from '@/components/Alerta';
 import CuentaAtras from '@/components/CuentaAtras';
 import TarjetaJugador from '@/components/TarjetaJugador';
+import Cargando from '@/components/Cargando';
 import { useJuego } from '@/store/juego';
 import {
   cicloActual,
@@ -52,7 +53,7 @@ export default function Mercado() {
     [liga?.id, jugadores, ciclo],
   );
 
-  if (!liga || !equipo) return null;
+  if (!liga || !equipo) return <Cargando texto="Cargando el mercado…" />;
 
   const abrirPuja = (j: Jugador) => {
     const minima = pujaMinima(j, liga.pujas?.[j.id]);

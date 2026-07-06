@@ -57,7 +57,7 @@ export const degradados = {
 
 export const espaciado = { xs: 4, s: 8, m: 12, l: 16, xl: 24, xxl: 32 };
 
-export const radios = { s: 8, m: 12, l: 16, xl: 20, pill: 999 };
+export const radios = { boton: 4, s: 8, m: 12, l: 16, xl: 20, pill: 999 };
 
 export const tipografia = {
   regular: 'Inter_400Regular',

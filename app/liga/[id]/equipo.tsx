@@ -14,6 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Boton from '@/components/Boton';
 import ChipPosicion, { COLOR_POSICION, ETIQUETA_POSICION } from '@/components/ChipPosicion';
 import TarjetaJugador from '@/components/TarjetaJugador';
+import Cargando from '@/components/Cargando';
 import { confirmar } from '@/components/Alerta';
 import { useJuego } from '@/store/juego';
 import { contarPlantilla } from '@/logic/mercadoLiga';
@@ -39,7 +40,7 @@ export default function Equipo() {
   const [vista, setVista] = useState<Vista>('equipo');
   const [huecoAbierto, setHuecoAbierto] = useState<string | null>(null);
 
-  if (!equipo) return null;
+  if (!equipo) return <Cargando texto="Preparando tu equipo…" />;
 
   const plantilla = equipo.plantillaIds
     .map((pid) => jugadores.find((j) => j.id === pid))
@@ -316,7 +317,7 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    borderRadius: radios.pill,
+    borderRadius: radios.boton,
     paddingHorizontal: 16,
     paddingVertical: 8,
     backgroundColor: colores.superficie,

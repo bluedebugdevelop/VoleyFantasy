@@ -60,6 +60,8 @@ interface EstadoJuego {
   ligas: Liga[];
   equiposLiga: Record<string, EquipoLiga>;
   ultimoDiaMercado: string;
+  /** Última liga en la que entró el usuario (para la barra de navegación). */
+  ultimaLigaId: string | null;
 
   inicializar: () => Promise<void>;
   establecerUsuario: (u: Usuario | null) => Promise<void>;
@@ -97,6 +99,7 @@ export const useJuego = create<EstadoJuego>()(
       ligas: [],
       equiposLiga: {},
       ultimoDiaMercado: '',
+      ultimaLigaId: null,
 
       inicializar: async () => {
         if (firebaseConfigurado || get().jugadores.length === 0) {
@@ -112,10 +115,20 @@ export const useJuego = create<EstadoJuego>()(
       establecerUsuario: async (u) => {
         set({ usuario: u });
         if (!u || u.demo) return;
+        // Fusiona el estado remoto con el local SIN pisarlo: el equipo local
+        // (recién creado) tiene prioridad para no perderse por una carrera.
         const remoto = await cargarEstadoUsuario(u.uid);
-        if (remoto?.equiposLiga) set({ equiposLiga: remoto.equiposLiga });
-        const ligas = await cargarLigasDeUsuario(u.uid);
-        if (ligas.length > 0) set({ ligas });
+        if (remoto?.equiposLiga) {
+          set((s) => ({ equiposLiga: { ...remoto.equiposLiga, ...s.equiposLiga } }));
+        }
+        // Solo ligas privadas (las públicas antiguas quedan ocultas).
+        const remotas = (await cargarLigasDeUsuario(u.uid)).filter((l) => l.tipo === 'privada');
+        set((s) => {
+          const mapa = new Map<string, Liga>();
+          remotas.forEach((l) => mapa.set(l.id, l));
+          s.ligas.filter((l) => l.tipo === 'privada').forEach((l) => mapa.set(l.id, l));
+          return { ligas: [...mapa.values()] };
+        });
       },
 
       cerrarSesion: () => {
@@ -138,7 +151,7 @@ export const useJuego = create<EstadoJuego>()(
           ventas: [],
         };
         if (!u.demo) await crearLigaRemota(liga);
-        set({ ligas: [...get().ligas, liga] });
+        set({ ligas: [...get().ligas, liga], ultimaLigaId: liga.id });
         return liga;
       },
 
@@ -154,12 +167,13 @@ export const useJuego = create<EstadoJuego>()(
           await unirseLigaRemota(remota.id, miembro);
           remota.miembros.push(miembro);
         }
-        set({ ligas: [...get().ligas.filter((l) => l.id !== remota.id), remota] });
+        set({ ligas: [...get().ligas.filter((l) => l.id !== remota.id), remota], ultimaLigaId: remota.id });
         return remota;
       },
 
       asegurarEquipo: (ligaId) => {
         const { equiposLiga, usuario, jugadores } = get();
+        set({ ultimaLigaId: ligaId });
         if (equiposLiga[ligaId]) return !equiposLiga[ligaId].bienvenidaVista;
         const liga = get().liga(ligaId);
         if (!liga || !usuario || jugadores.length === 0) return false;
@@ -170,7 +184,7 @@ export const useJuego = create<EstadoJuego>()(
           presupuesto: inicial.presupuesto,
           bienvenidaVista: false,
         };
-        set({ equiposLiga: { ...equiposLiga, [ligaId]: equipo } });
+        set({ equiposLiga: { ...get().equiposLiga, [ligaId]: equipo } });
         sincronizarRemoto(get());
         return true;
       },
@@ -349,9 +363,10 @@ export const useJuego = create<EstadoJuego>()(
         usuario: s.usuario?.demo ? s.usuario : null,
         jugadores: s.jugadores,
         calendario: s.calendario,
-        ligas: s.ligas,
+        ligas: s.ligas.filter((l) => l.tipo === 'privada'),
         equiposLiga: s.equiposLiga,
         ultimoDiaMercado: s.ultimoDiaMercado,
+        ultimaLigaId: s.ultimaLigaId,
       }),
     },
   ),

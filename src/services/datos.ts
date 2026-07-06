@@ -20,10 +20,18 @@ import calendarioLocal from '../data/calendario.json';
  * `calendario` que rellena a diario el scraper) con datos empaquetados como
  * respaldo (modo demo / sin conexión).
  */
+/** Aborta una promesa si tarda más de `ms` (evita que getDocs cuelgue la app). */
+function conTimeout<T>(promesa: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promesa,
+    new Promise<T>((_, rej) => setTimeout(() => rej(new Error('timeout')), ms)),
+  ]);
+}
+
 export async function cargarJugadores(): Promise<Jugador[]> {
   if (db) {
     try {
-      const snap = await getDocs(collection(db, 'jugadores'));
+      const snap = await conTimeout(getDocs(collection(db, 'jugadores')), 7000);
       if (!snap.empty) return snap.docs.map((d) => d.data() as Jugador);
     } catch (e) {
       console.warn('No se pudieron cargar jugadores de Firestore, usando datos locales', e);
@@ -37,7 +45,7 @@ export async function cargarJugadores(): Promise<Jugador[]> {
 export async function cargarCalendario(): Promise<Record<string, Partido[]>> {
   if (db) {
     try {
-      const snap = await getDocs(collection(db, 'calendario'));
+      const snap = await conTimeout(getDocs(collection(db, 'calendario')), 7000);
       if (!snap.empty) {
         const r: Record<string, Partido[]> = {};
         snap.forEach((d) => {

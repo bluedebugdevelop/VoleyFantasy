@@ -2,25 +2,29 @@ import React, { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Tabs, useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { NavLiga } from '@/components/BottomNav';
 import { useJuego } from '@/store/juego';
 import { nombreModalidad } from '@/types';
 import { colores, espaciado, tipografia } from '@/theme';
 
-/** Pestañas internas de una liga: Clasificación · Equipo · Mercado. */
+/** Pestañas internas de una liga: Liga · Mi equipo · Mercado (+ Inicio). */
 export default function LigaLayout() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const liga = useJuego((s) => s.ligas.find((l) => l.id === id));
+  const usuario = useJuego((s) => s.usuario);
+  const numJugadores = useJuego((s) => s.jugadores.length);
   const asegurarEquipo = useJuego((s) => s.asegurarEquipo);
   const sincronizarMercado = useJuego((s) => s.sincronizarMercado);
 
+  // Reintenta al montar y cuando ya haya jugadores/usuario cargados: así el
+  // equipo se crea aunque los datos llegasen tarde (evita pantallas en negro).
   useEffect(() => {
-    if (!id) return;
+    if (!id || numJugadores === 0) return;
     asegurarEquipo(id);
     sincronizarMercado(id);
-  }, [id]);
+  }, [id, numJugadores, usuario?.uid]);
 
   if (!liga) {
     return (
@@ -53,64 +57,12 @@ export default function LigaLayout() {
       </View>
 
       <Tabs
-        screenOptions={{
-          headerShown: false,
-          tabBarActiveTintColor: colores.primario,
-          tabBarInactiveTintColor: colores.textoMuted,
-          tabBarStyle: {
-            backgroundColor: colores.fondoAlt,
-            borderTopColor: colores.borde,
-            borderTopWidth: 1,
-            height: 58 + insets.bottom,
-            paddingTop: 6,
-            paddingBottom: insets.bottom + 6,
-          },
-          tabBarLabelStyle: { fontFamily: tipografia.semibold, fontSize: 11 },
-          sceneStyle: { backgroundColor: colores.fondo },
-        }}
+        tabBar={(props) => <NavLiga {...props} />}
+        screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: colores.fondo } }}
       >
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: 'Liga',
-            tabBarIcon: ({ color, focused }) => (
-              <Ionicons name={focused ? 'podium' : 'podium-outline'} size={22} color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="equipo"
-          options={{
-            title: 'Mi equipo',
-            tabBarIcon: ({ color, focused }) => (
-              <Ionicons name={focused ? 'shirt' : 'shirt-outline'} size={22} color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="mercado"
-          options={{
-            title: 'Mercado',
-            tabBarIcon: ({ color, focused }) => (
-              <Ionicons name={focused ? 'trending-up' : 'trending-up-outline'} size={22} color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="inicio"
-          options={{
-            title: 'Inicio',
-            tabBarIcon: ({ color, focused }) => (
-              <Ionicons name={focused ? 'home' : 'home-outline'} size={22} color={color} />
-            ),
-          }}
-          listeners={{
-            tabPress: (e) => {
-              e.preventDefault();
-              router.replace('/home');
-            },
-          }}
-        />
+        <Tabs.Screen name="index" options={{ title: 'Liga' }} />
+        <Tabs.Screen name="equipo" options={{ title: 'Mi equipo' }} />
+        <Tabs.Screen name="mercado" options={{ title: 'Mercado' }} />
         <Tabs.Screen name="invitar" options={{ href: null }} />
       </Tabs>
     </SafeAreaView>

@@ -6,9 +6,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Boton from '@/components/Boton';
 import FondoDegradado from '@/components/FondoDegradado';
-import { confirmar } from '@/components/Alerta';
+import { BotonMenu } from '@/components/MenuLateral';
+import { NavHome } from '@/components/BottomNav';
 import { useJuego } from '@/store/juego';
-import { cerrarSesionFirebase } from '@/services/auth';
 import { categoriasDeModalidad, Liga, Modalidad, MODALIDADES, nombreModalidad, Partido } from '@/types';
 import { colores, espaciado, radios, sombraSuave, tipografia } from '@/theme';
 
@@ -27,10 +27,12 @@ export default function Home() {
   const ligas = useJuego((s) => s.ligas);
   const calendario = useJuego((s) => s.calendario);
   const asegurarEquipo = useJuego((s) => s.asegurarEquipo);
-  const cerrarSesion = useJuego((s) => s.cerrarSesion);
   const [catCalendario, setCatCalendario] = useState<Modalidad>('sp1m');
 
-  const misLigas = usuario ? ligas.filter((l) => l.miembros.some((m) => m.uid === usuario.uid)) : [];
+  // Solo ligas privadas de las que el usuario es miembro.
+  const misLigas = usuario
+    ? ligas.filter((l) => l.tipo === 'privada' && l.miembros.some((m) => m.uid === usuario.uid))
+    : [];
 
   const partidos: Partido[] = useMemo(() => {
     const cats = categoriasDeModalidad(catCalendario);
@@ -43,29 +45,19 @@ export default function Home() {
     else router.push({ pathname: '/liga/[id]', params: { id: liga.id } });
   };
 
-  const salir = () => {
-    confirmar('Cerrar sesión', '¿Seguro que quieres salir de tu cuenta?', async () => {
-      await cerrarSesionFirebase();
-      cerrarSesion();
-      router.replace('/(auth)/login');
-    }, { textoOk: 'Salir', destructivo: true, icono: 'log-out' });
-  };
-
   return (
     <FondoDegradado>
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <ScrollView contentContainerStyle={estilos.contenido} showsVerticalScrollIndicator={false}>
           {/* Cabecera */}
           <View style={estilos.topbar}>
-            <View>
+            <BotonMenu />
+            <View style={{ flex: 1 }}>
               <Text style={estilos.hola}>Hola, {usuario?.nombre?.split(' ')[0]}</Text>
               <Text style={estilos.titulo}>
                 La <Text style={{ color: colores.primario }}>SuperFantasy</Text>
               </Text>
             </View>
-            <Pressable style={estilos.avatar} onPress={salir}>
-              <Text style={estilos.avatarTexto}>{(usuario?.nombre ?? '?').charAt(0).toUpperCase()}</Text>
-            </Pressable>
           </View>
 
           {/* Acciones */}
@@ -137,6 +129,7 @@ export default function Home() {
             </View>
           )}
         </ScrollView>
+        <NavHome />
       </SafeAreaView>
     </FondoDegradado>
   );
@@ -187,7 +180,7 @@ function Seccion({ icono, titulo }: { icono: any; titulo: string }) {
 
 const estilos = StyleSheet.create({
   contenido: { padding: espaciado.l, paddingBottom: 40 },
-  topbar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: espaciado.l },
+  topbar: { flexDirection: 'row', alignItems: 'center', gap: espaciado.m, marginBottom: espaciado.l },
   hola: { fontSize: 13, fontFamily: tipografia.regular, color: colores.textoTenue },
   titulo: { fontSize: 26, fontFamily: tipografia.extrabold, color: colores.texto },
   avatar: {
@@ -240,7 +233,7 @@ const estilos = StyleSheet.create({
   ligaPuestoNumero: { fontSize: 22, fontFamily: tipografia.extrabold, color: colores.primarioClaro },
   ligaPuestoEtiqueta: { fontSize: 10, fontFamily: tipografia.medium, color: colores.textoTenue },
   pillCat: {
-    borderRadius: radios.pill,
+    borderRadius: radios.boton,
     paddingHorizontal: 14,
     paddingVertical: 7,
     backgroundColor: colores.superficie,

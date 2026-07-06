@@ -1,7 +1,7 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 // @ts-ignore getReactNativePersistence existe en firebase/auth pero no está en sus tipos
 import { Auth, getAuth, initializeAuth, getReactNativePersistence } from 'firebase/auth';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { Firestore, getFirestore, initializeFirestore } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /**
@@ -51,7 +51,13 @@ if (firebaseConfigurado) {
   } catch {
     auth = getAuth(app);
   }
-  db = getFirestore(app);
+  // experimentalAutoDetectLongPolling evita que getDocs se quede colgado en
+  // algunas redes/dispositivos Android (problema conocido del SDK web en RN).
+  try {
+    db = initializeFirestore(app, { experimentalAutoDetectLongPolling: true });
+  } catch {
+    db = getFirestore(app);
+  }
 }
 
 export { app, auth, db };
