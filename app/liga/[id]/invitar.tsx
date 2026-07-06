@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Pressable, Share, StyleSheet, Text, View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
+import { useLigaId } from '@/components/LigaContext';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Boton from '@/components/Boton';
@@ -11,7 +12,7 @@ import { colores, degradados, espaciado, radios, sombraSuave, tipografia } from 
 
 /** Invitar amigos a la liga: código grande + copiar + compartir enlace. */
 export default function Invitar() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const id = useLigaId();
   const router = useRouter();
   const liga = useJuego((s) => s.ligas.find((l) => l.id === id));
   const [copiado, setCopiado] = useState(false);

@@ -4,6 +4,7 @@ import { Tabs, useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavLiga } from '@/components/BottomNav';
+import { LigaIdContext } from '@/components/LigaContext';
 import { useJuego } from '@/store/juego';
 import { nombreModalidad } from '@/types';
 import { colores, espaciado, tipografia } from '@/theme';
@@ -36,6 +37,7 @@ export default function LigaLayout() {
   }
 
   return (
+    <LigaIdContext.Provider value={id}>
     <SafeAreaView style={{ flex: 1, backgroundColor: colores.fondoAlt }} edges={['top']}>
       {/* Cabecera de la liga */}
       <View style={estilos.header}>
@@ -67,6 +69,7 @@ export default function LigaLayout() {
         <Tabs.Screen name="invitar" options={{ href: null }} />
       </Tabs>
     </SafeAreaView>
+    </LigaIdContext.Provider>
   );
 }
 

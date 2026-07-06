@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
-import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
+import { useLigaId } from '@/components/LigaContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useJuego } from '@/store/juego';
 import { colores, espaciado, formatearValor, radios, tipografia } from '@/theme';
@@ -8,7 +9,7 @@ import { colores, espaciado, formatearValor, radios, tipografia } from '@/theme'
 const COLORES_PODIO = ['#F59E0B', '#94A3B8', '#B45309'];
 
 export default function Clasificacion() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const id = useLigaId();
   const liga = useJuego((s) => s.ligas.find((l) => l.id === id));
   const usuario = useJuego((s) => s.usuario);
   const refrescarLiga = useJuego((s) => s.refrescarLiga);

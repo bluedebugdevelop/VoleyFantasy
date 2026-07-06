@@ -8,7 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useLigaId } from '@/components/LigaContext';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Boton from '@/components/Boton';
@@ -30,7 +30,7 @@ import { colores, degradados, espaciado, formatearValor, radios, sombraSuave, ti
 type Vista = 'equipo' | 'plantilla';
 
 export default function Equipo() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const id = useLigaId();
   const jugadores = useJuego((s) => s.jugadores);
   const equipo = useJuego((s) => s.equiposLiga[id]);
   const alinear = useJuego((s) => s.alinear);

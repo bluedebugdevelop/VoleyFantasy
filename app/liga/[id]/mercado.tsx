@@ -10,7 +10,8 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
+import { useLigaId } from '@/components/LigaContext';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Boton from '@/components/Boton';
@@ -30,7 +31,7 @@ import { Jugador } from '@/types';
 import { colores, degradados, espaciado, formatearValor, radios, tipografia } from '@/theme';
 
 export default function Mercado() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const id = useLigaId();
   const usuario = useJuego((s) => s.usuario);
   const jugadores = useJuego((s) => s.jugadores);
   const liga = useJuego((s) => s.ligas.find((l) => l.id === id));
