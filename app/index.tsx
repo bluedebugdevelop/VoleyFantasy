@@ -4,13 +4,19 @@ import { Redirect } from 'expo-router';
 import FondoDegradado from '@/components/FondoDegradado';
 import Logo from '@/components/Logo';
 import { useJuego } from '@/store/juego';
+import { firebaseConfigurado } from '@/services/firebase';
 import { colores } from '@/theme';
 
 export default function Index() {
   const usuario = useJuego((s) => s.usuario);
   const cargando = useJuego((s) => s.cargando);
+  const sesionComprobada = useJuego((s) => s.sesionComprobada);
 
-  if (cargando) {
+  // Espera a que Firebase confirme si hay sesión guardada (así no manda a login
+  // por un instante antes de restaurarla). En modo demo no aplica.
+  const esperando = cargando || (firebaseConfigurado && !usuario && !sesionComprobada);
+
+  if (esperando) {
     return (
       <FondoDegradado style={{ alignItems: 'center', justifyContent: 'center', gap: 28 }}>
         <Logo />

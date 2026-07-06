@@ -10,6 +10,7 @@ import {
   MAX_JUGADORES_PLANTILLA,
   PLANTILLA_INICIAL_MAX,
   PLANTILLA_INICIAL_MIN,
+  Posicion,
   PRESUPUESTO_TOTAL,
   Puja,
   Venta,
@@ -67,16 +68,37 @@ export function poolDeLiga(liga: Liga, jugadores: Jugador[]): Jugador[] {
   return jugadores.filter((j) => cats.includes(j.categoria));
 }
 
-/** Los 10 jugadores del mercado del ciclo dado (determinista). */
+const POSICIONES_MERCADO: Posicion[] = ['colocador', 'opuesto', 'central', 'receptor', 'libero', 'entrenador'];
+
+/**
+ * Los 14 jugadores del mercado del ciclo (determinista): 2 por posición y, si
+ * sobran huecos, se completan con fichables aleatorios del pool.
+ */
 export function jugadoresDelMercado(liga: Liga, jugadores: Jugador[], ciclo = cicloActual(liga)): Jugador[] {
   const pool = poolDeLiga(liga, jugadores);
   if (pool.length === 0) return [];
   const rng = crearRng(semillaDe(`${liga.id}|mercado|${ciclo}`));
-  const indices = new Set<number>();
-  while (indices.size < Math.min(JUGADORES_MERCADO_DIARIO, pool.length)) {
-    indices.add(Math.floor(rng() * pool.length));
+  const elegidos = new Set<string>();
+  const resultado: Jugador[] = [];
+
+  const tomarAleatorio = (candidatos: Jugador[], n: number) => {
+    const disponibles = candidatos.filter((j) => !elegidos.has(j.id));
+    for (let k = 0; k < n && disponibles.length > 0; k++) {
+      const i = Math.floor(rng() * disponibles.length);
+      const [j] = disponibles.splice(i, 1);
+      elegidos.add(j.id);
+      resultado.push(j);
+    }
+  };
+
+  // 2 por posición
+  for (const pos of POSICIONES_MERCADO) {
+    tomarAleatorio(pool.filter((j) => j.posicion === pos), 2);
   }
-  return [...indices].map((i) => pool[i]);
+  // Completa hasta JUGADORES_MERCADO_DIARIO (14) con cualquiera
+  tomarAleatorio(pool, JUGADORES_MERCADO_DIARIO - resultado.length);
+
+  return resultado;
 }
 
 // ---- Pujas ----

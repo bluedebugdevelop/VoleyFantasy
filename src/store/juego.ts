@@ -38,6 +38,11 @@ import {
   unirseLigaRemota,
 } from '../services/datos';
 import { firebaseConfigurado } from '../services/firebase';
+import jugadoresReales from '../data/jugadoresReales.json';
+
+// Datos empaquetados: se usan como estado inicial para que la lista de
+// jugadores NUNCA esté vacía (evita que Mi equipo/Mercado se queden cargando).
+const JUGADORES_INICIALES = jugadoresReales as unknown as Jugador[];
 
 function alineacionVacia(): Record<string, string | null> {
   const a: Record<string, string | null> = {};
@@ -62,8 +67,13 @@ interface EstadoJuego {
   ultimoDiaMercado: string;
   /** Última liga en la que entró el usuario (para la barra de navegación). */
   ultimaLigaId: string | null;
+  /** true cuando la persistencia (AsyncStorage) ya se ha rehidratado. */
+  hidratado: boolean;
+  /** true cuando Firebase Auth ya ha emitido su primer estado de sesión. */
+  sesionComprobada: boolean;
 
   inicializar: () => Promise<void>;
+  marcarSesionComprobada: () => void;
   establecerUsuario: (u: Usuario | null) => Promise<void>;
   cerrarSesion: () => void;
 
@@ -94,12 +104,14 @@ export const useJuego = create<EstadoJuego>()(
     (set, get) => ({
       usuario: null,
       cargando: true,
-      jugadores: [],
+      jugadores: JUGADORES_INICIALES,
       calendario: {},
       ligas: [],
       equiposLiga: {},
       ultimoDiaMercado: '',
       ultimaLigaId: null,
+      hidratado: false,
+      sesionComprobada: false,
 
       inicializar: async () => {
         if (firebaseConfigurado || get().jugadores.length === 0) {
@@ -111,6 +123,8 @@ export const useJuego = create<EstadoJuego>()(
         get().actualizarMercadoDiario();
         set({ cargando: false });
       },
+
+      marcarSesionComprobada: () => set({ sesionComprobada: true }),
 
       establecerUsuario: async (u) => {
         set({ usuario: u });
@@ -361,13 +375,22 @@ export const useJuego = create<EstadoJuego>()(
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (s) => ({
         usuario: s.usuario?.demo ? s.usuario : null,
-        jugadores: s.jugadores,
+        // No persistimos `jugadores`: siempre partimos de los datos empaquetados
+        // y Firestore los actualiza. Evita listas vacías/desfasadas al arrancar.
         calendario: s.calendario,
         ligas: s.ligas.filter((l) => l.tipo === 'privada'),
         equiposLiga: s.equiposLiga,
         ultimoDiaMercado: s.ultimoDiaMercado,
         ultimaLigaId: s.ultimaLigaId,
       }),
+      onRehydrateStorage: () => (estado) => {
+        // Marca la hidratación completada: hasta aquí, el estado persistido ya
+        // se ha fusionado, así que crear equipos después es seguro.
+        useJuego.setState({ hidratado: true });
+        if (estado && (!estado.jugadores || estado.jugadores.length === 0)) {
+          useJuego.setState({ jugadores: JUGADORES_INICIALES });
+        }
+      },
     },
   ),
 );

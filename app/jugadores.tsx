@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import FondoDegradado from '@/components/FondoDegradado';
@@ -86,41 +86,35 @@ export default function Jugadores() {
         </View>
 
         {/* Filtros: categoría */}
-        <FlatList
-          horizontal
-          data={CATEGORIAS}
-          keyExtractor={(c) => c}
-          showsHorizontalScrollIndicator={false}
-          style={estilos.filaFiltros}
-          contentContainerStyle={estilos.filaFiltrosCont}
-          renderItem={({ item }) => (
-            <Chip
-              activo={cat === item}
-              texto={item === 'todas' ? 'Todas' : NOMBRE_CATEGORIA[item]}
-              onPress={() => {
-                setCat(item);
-                setEquipo(null);
-              }}
-            />
-          )}
-        />
+        <View style={estilos.filaFiltros}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={estilos.filaFiltrosCont}>
+            {CATEGORIAS.map((item) => (
+              <Chip
+                key={item}
+                activo={cat === item}
+                texto={item === 'todas' ? 'Todas' : NOMBRE_CATEGORIA[item]}
+                onPress={() => {
+                  setCat(item);
+                  setEquipo(null);
+                }}
+              />
+            ))}
+          </ScrollView>
+        </View>
 
         {/* Filtros: posición */}
-        <FlatList
-          horizontal
-          data={POSICIONES}
-          keyExtractor={(p) => p}
-          showsHorizontalScrollIndicator={false}
-          style={estilos.filaFiltros}
-          contentContainerStyle={estilos.filaFiltrosCont}
-          renderItem={({ item }) => (
-            <Chip
-              activo={pos === item}
-              texto={item === 'todas' ? 'Posición' : NOMBRE_POSICION[item]}
-              onPress={() => setPos(item)}
-            />
-          )}
-        />
+        <View style={estilos.filaFiltros}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={estilos.filaFiltrosCont}>
+            {POSICIONES.map((item) => (
+              <Chip
+                key={item}
+                activo={pos === item}
+                texto={item === 'todas' ? 'Posición' : NOMBRE_POSICION[item]}
+                onPress={() => setPos(item)}
+              />
+            ))}
+          </ScrollView>
+        </View>
 
         {/* Equipo + orden */}
         <View style={estilos.filaEquipoOrden}>
@@ -214,8 +208,8 @@ const estilos = StyleSheet.create({
     borderColor: colores.borde,
   },
   input: { flex: 1, paddingVertical: 11, fontSize: 15, fontFamily: tipografia.medium, color: colores.texto },
-  filaFiltros: { flexGrow: 0, marginTop: espaciado.s },
-  filaFiltrosCont: { paddingHorizontal: espaciado.l, gap: 8 },
+  filaFiltros: { marginTop: espaciado.s },
+  filaFiltrosCont: { paddingHorizontal: espaciado.l, gap: 8, alignItems: 'center' },
   chip: {
     borderRadius: radios.boton,
     paddingHorizontal: 12,

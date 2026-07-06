@@ -103,7 +103,7 @@ export const MAX_ENTRENADORES_PLANTILLA = 2;
 export const PRESUPUESTO_TOTAL = 150_000_000;
 export const PLANTILLA_INICIAL_MIN = 50_000_000;
 export const PLANTILLA_INICIAL_MAX = 60_000_000;
-export const JUGADORES_MERCADO_DIARIO = 10;
+export const JUGADORES_MERCADO_DIARIO = 14;
 export const DURACION_CICLO_MERCADO_MS = 24 * 60 * 60 * 1000;
 
 export interface MiembroLiga {

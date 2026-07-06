@@ -80,7 +80,7 @@ export default function Mercado() {
         <View style={{ flex: 1 }}>
           <Text style={estilos.cabeceraTitulo}>Mercado diario</Text>
           <Text style={estilos.cabeceraSub}>
-            10 jugadores nuevos cada 24 h · día {ciclo + 1} de tu liga
+            14 jugadores nuevos cada 24 h · día {ciclo + 1} de tu liga
           </Text>
         </View>
         <View style={{ alignItems: 'flex-end', gap: 4 }}>

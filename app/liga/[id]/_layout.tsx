@@ -15,16 +15,17 @@ export default function LigaLayout() {
   const liga = useJuego((s) => s.ligas.find((l) => l.id === id));
   const usuario = useJuego((s) => s.usuario);
   const numJugadores = useJuego((s) => s.jugadores.length);
+  const hidratado = useJuego((s) => s.hidratado);
   const asegurarEquipo = useJuego((s) => s.asegurarEquipo);
   const sincronizarMercado = useJuego((s) => s.sincronizarMercado);
 
-  // Reintenta al montar y cuando ya haya jugadores/usuario cargados: así el
-  // equipo se crea aunque los datos llegasen tarde (evita pantallas en negro).
+  // Se crea el equipo SOLO tras la hidratación de la persistencia (para que no
+  // lo pise el estado guardado) y con jugadores ya disponibles.
   useEffect(() => {
-    if (!id || numJugadores === 0) return;
+    if (!id || !hidratado || numJugadores === 0) return;
     asegurarEquipo(id);
     sincronizarMercado(id);
-  }, [id, numJugadores, usuario?.uid]);
+  }, [id, hidratado, numJugadores, usuario?.uid]);
 
   if (!liga) {
     return (
@@ -88,7 +89,7 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     gap: 5,
     backgroundColor: colores.primarioTenue,
-    borderRadius: 999,
+    borderRadius: 4,
     paddingHorizontal: 12,
     paddingVertical: 7,
   },

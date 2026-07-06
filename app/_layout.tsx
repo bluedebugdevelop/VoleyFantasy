@@ -33,8 +33,11 @@ export default function RootLayout() {
 
   useEffect(() => {
     inicializar();
+    // Firebase restaura la sesión guardada en el dispositivo. Marcamos que ya
+    // se ha comprobado para que el índice no mande a login antes de tiempo.
     const desuscribir = observarSesion((u) => {
       if (u) establecerUsuario(u);
+      useJuego.getState().marcarSesionComprobada();
     });
     return desuscribir;
   }, []);
