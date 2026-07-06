@@ -17,7 +17,7 @@ import Boton from '@/components/Boton';
 import { alerta } from '@/components/Alerta';
 import CuentaAtras from '@/components/CuentaAtras';
 import TarjetaJugador from '@/components/TarjetaJugador';
-import Cargando from '@/components/Cargando';
+import SinEquipo from '@/components/SinEquipo';
 import { useJuego } from '@/store/juego';
 import {
   cicloActual,
@@ -50,10 +50,10 @@ export default function Mercado() {
   const expira = liga ? expiraCiclo(liga) : Date.now();
   const enMercado = useMemo(
     () => (liga ? jugadoresDelMercado(liga, jugadores, ciclo) : []),
-    [liga?.id, jugadores, ciclo],
+    [liga?.id, jugadores, ciclo, liga?.ventas?.length, liga?.miembros?.length],
   );
 
-  if (!liga || !equipo) return <Cargando texto="Cargando el mercado…" />;
+  if (!liga || !equipo) return <SinEquipo ligaId={id} />;
 
   const abrirPuja = (j: Jugador) => {
     const minima = pujaMinima(j, liga.pujas?.[j.id]);
@@ -135,7 +135,7 @@ export default function Mercado() {
           );
         }}
         ListEmptyComponent={
-          <Text style={estilos.vacio}>Cargando el mercado de tu liga…</Text>
+          <Text style={estilos.vacio}>Hoy no quedan jugadores libres en el mercado.</Text>
         }
       />
 

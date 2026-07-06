@@ -71,11 +71,28 @@ export function poolDeLiga(liga: Liga, jugadores: Jugador[]): Jugador[] {
 const POSICIONES_MERCADO: Posicion[] = ['colocador', 'opuesto', 'central', 'receptor', 'libero', 'entrenador'];
 
 /**
+ * Jugadores ya en propiedad de algún miembro de la liga. Es DETERMINISTA
+ * (igual en todos los clientes): las plantillas iniciales se recalculan por
+ * uid y las subastas ganadas vienen del documento compartido de la liga.
+ */
+export function idsOcupados(liga: Liga, jugadores: Jugador[]): Set<string> {
+  const ocupados = new Set<string>();
+  // Mismo reparto secuencial que plantillaInicialMiembro
+  for (const m of liga.miembros ?? []) {
+    for (const id of plantillaInicial(liga.id, m.uid, liga, jugadores, ocupados).ids) ocupados.add(id);
+  }
+  for (const v of liga.ventas ?? []) ocupados.add(v.jugadorId);
+  return ocupados;
+}
+
+/**
  * Los 14 jugadores del mercado del ciclo (determinista): 2 por posición y, si
- * sobran huecos, se completan con fichables aleatorios del pool.
+ * sobran huecos, se completan con fichables aleatorios. Nunca salen jugadores
+ * que ya pertenezcan a algún miembro de la liga.
  */
 export function jugadoresDelMercado(liga: Liga, jugadores: Jugador[], ciclo = cicloActual(liga)): Jugador[] {
-  const pool = poolDeLiga(liga, jugadores);
+  const ocupados = idsOcupados(liga, jugadores);
+  const pool = poolDeLiga(liga, jugadores).filter((j) => !ocupados.has(j.id));
   if (pool.length === 0) return [];
   const rng = crearRng(semillaDe(`${liga.id}|mercado|${ciclo}`));
   const elegidos = new Set<string>();
@@ -175,15 +192,17 @@ const POSICIONES_INICIALES = ['colocador', 'opuesto', 'central', 'central', 'rec
 /**
  * Plantilla inicial determinista para (liga, usuario): 7 jugadores que cubren
  * todas las posiciones y suman entre 50 y 60 M€. El presupuesto restante es
- * 150 M€ menos el coste del equipo regalado.
+ * 150 M€ menos el coste del equipo regalado. `excluidos` permite repartir sin
+ * duplicados entre miembros (ver plantillaInicialMiembro).
  */
 export function plantillaInicial(
   ligaId: string,
   uid: string,
   liga: Liga,
   jugadores: Jugador[],
+  excluidos: Set<string> = new Set(),
 ): { ids: string[]; coste: number; presupuesto: number } {
-  const pool = poolDeLiga(liga, jugadores);
+  const pool = poolDeLiga(liga, jugadores).filter((j) => !excluidos.has(j.id));
   const porPosicion = new Map<string, Jugador[]>();
   for (const p of POSICIONES_INICIALES) {
     if (!porPosicion.has(p)) porPosicion.set(p, pool.filter((j) => j.posicion === p));
@@ -222,6 +241,25 @@ export function plantillaInicial(
 
   const coste = mejor.reduce((s, j) => s + j.valor, 0);
   return { ids: mejor.map((j) => j.id), coste, presupuesto: PRESUPUESTO_TOTAL - coste };
+}
+
+/**
+ * Plantilla inicial SIN duplicados entre miembros: se reparte en el orden de
+ * ingreso a la liga (compartido vía Firestore), excluyendo lo ya repartido a
+ * los anteriores. Determinista en todos los clientes.
+ */
+export function plantillaInicialMiembro(
+  liga: Liga,
+  uid: string,
+  jugadores: Jugador[],
+): { ids: string[]; coste: number; presupuesto: number } {
+  const excluidos = new Set<string>();
+  for (const m of liga.miembros ?? []) {
+    if (m.uid === uid) return plantillaInicial(liga.id, uid, liga, jugadores, excluidos);
+    for (const id of plantillaInicial(liga.id, m.uid, liga, jugadores, excluidos).ids) excluidos.add(id);
+  }
+  // No aparece en miembros todavía (recién unido): excluye a todos los demás.
+  return plantillaInicial(liga.id, uid, liga, jugadores, excluidos);
 }
 
 /** Alineación automática con la plantilla inicial (rellena los 7 huecos de pista). */

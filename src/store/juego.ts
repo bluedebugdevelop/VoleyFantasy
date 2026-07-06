@@ -18,7 +18,7 @@ import {
   alinearInicial,
   cabeEnPlantilla,
   cicloActual,
-  plantillaInicial,
+  plantillaInicialMiembro,
   resolverPujas,
   validarPuja,
 } from '../logic/mercadoLiga';
@@ -191,7 +191,7 @@ export const useJuego = create<EstadoJuego>()(
         if (equiposLiga[ligaId]) return !equiposLiga[ligaId].bienvenidaVista;
         const liga = get().liga(ligaId);
         if (!liga || !usuario || jugadores.length === 0) return false;
-        const inicial = plantillaInicial(ligaId, usuario.uid, liga, jugadores);
+        const inicial = plantillaInicialMiembro(liga, usuario.uid, jugadores);
         const equipo: EquipoLiga = {
           plantillaIds: inicial.ids,
           alineacion: { ...alineacionVacia(), ...alinearInicial(inicial.ids, jugadores) },
@@ -383,13 +383,30 @@ export const useJuego = create<EstadoJuego>()(
         ultimoDiaMercado: s.ultimoDiaMercado,
         ultimaLigaId: s.ultimaLigaId,
       }),
-      onRehydrateStorage: () => (estado) => {
-        // Marca la hidratación completada: hasta aquí, el estado persistido ya
-        // se ha fusionado, así que crear equipos después es seguro.
+      /**
+       * Fusión de hidratación a prueba de carreras: lo guardado NUNCA pisa un
+       * equipo que exista ya en memoria, y `jugadores` siempre viene del
+       * bundle (o de Firestore cuando cargue), jamás vacío.
+       */
+      merge: (persistido, actual) => {
+        const p = (persistido ?? {}) as Partial<EstadoJuego>;
+        const ligas = new Map<string, Liga>();
+        (p.ligas ?? []).forEach((l) => l?.tipo === 'privada' && ligas.set(l.id, l));
+        (actual.ligas ?? []).forEach((l) => l?.tipo === 'privada' && ligas.set(l.id, l));
+        return {
+          ...actual,
+          ...p,
+          jugadores: actual.jugadores?.length ? actual.jugadores : JUGADORES_INICIALES,
+          equiposLiga: { ...(p.equiposLiga ?? {}), ...actual.equiposLiga },
+          ligas: [...ligas.values()],
+          hidratado: true,
+          cargando: actual.cargando,
+          sesionComprobada: actual.sesionComprobada,
+        };
+      },
+      onRehydrateStorage: () => () => {
+        // Respaldo por si la lectura de AsyncStorage falla: nunca bloquear.
         useJuego.setState({ hidratado: true });
-        if (estado && (!estado.jugadores || estado.jugadores.length === 0)) {
-          useJuego.setState({ jugadores: JUGADORES_INICIALES });
-        }
       },
     },
   ),
